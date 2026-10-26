@@ -1,14 +1,25 @@
 # Carteira Digital RPG
 
-React / Express / tRPC / Drizzle starter, adapted from the Sandbox web-db-user template.
+Carteira de trabalho digital para servidores de RPG, com cadastro de trabalhadores e empresas, contratos, assinaturas, ponto, pagamentos, encerramentos, auditoria, permissões e relatórios.
 
-- `pnpm dev`: development server; honors `PORT` (default 3000).
-- `pnpm build` / `pnpm start`: build and serve `dist/index.js` and `dist/public/`.
-- `pnpm db:migrate`: apply checked-in migrations. `pnpm db:push`: generate and apply new schema changes.
-- `pnpm check` / `pnpm test`: types and application tests.
+## Login inicial
 
-Start with the Webdev skill's default-template guide. Platform login, storage, payments and service contracts live in its shared references; read the relevant capability before extending its helper.
+A primeira conta é criada automaticamente no navegador: `master` com senha `master123`. O Admin Master pode criar outras contas com nome, username, cargo e senha. Os dados da aplicação e a sessão ficam no `localStorage` do navegador. O WebSocket `/ws` sincroniza alterações entre operadores conectados; se a conexão cair, o cliente reconecta com backoff e continua operando em modo local.
 
-`server/_core/publicConfig.ts` exposes only named public runtime values. Private keys stay server-side. The platform serves managed `/manus-storage/` assets; the application does not register a second proxy.
+## Desenvolvimento
 
-Platform configuration is readable and editable through `webdev.config`. Default settings are initial values, not enforced constraints. The agent may modify the files, commands and configuration or follow the flexible guide for another stack.
+```bash
+pnpm install
+pnpm dev
+pnpm check
+pnpm build
+pnpm start
+```
+
+O servidor respeita `PORT` e escuta em `0.0.0.0`, possui `GET /api/health` e serve o cliente compilado em produção. O endpoint WebSocket usa o mesmo host e porta no caminho `/ws`.
+
+## Deploy no Render
+
+O projeto inclui `render.yaml` e `Dockerfile`. No Render, conecte o repositório e crie um **Web Service** usando runtime Docker. O Blueprint já define o health check em `/api/health`, build da imagem e deploy automático. O serviço usa a variável `PORT` fornecida pelo Render e aceita conexões `wss://seu-servico.onrender.com/ws`.
+
+Para produção com múltiplas instâncias ou dados compartilhados entre dispositivos, adicione um banco de dados ou storage compartilhado. O modo atual foi desenhado para RPG e mantém os dados no navegador por requisito do projeto; o WebSocket sincroniza os clientes enquanto estão conectados ao mesmo serviço.

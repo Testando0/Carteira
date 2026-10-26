@@ -1,8 +1,7 @@
 export {};
 declare global {
   interface Window {
-    __MANUS_CONFIG__?: {
-      projectId: string; oauthPortalUrl: string; apiUrl: string; apiBrowserKey: string;
-    };
+    __CARTEIRA_CONFIG__?: { apiUrl?: string };
+    __MANUS_CONFIG__?: { apiUrl?: string; apiBrowserKey?: string; projectId?: string };
   }
 }

@@ -137,3 +137,6 @@ html,body{background:radial-gradient(ellipse at 50% -12%,color-mix(in srgb,var(-
 
 /* IMG_20261026_222732_931.jpg: remove only the four outer corner brackets */
 .app-shell::before{background:none!important}
+
+/* The user requested no full-screen outer frame; keep only component frames. */
+.app-shell::before{display:none!important;content:none!important}

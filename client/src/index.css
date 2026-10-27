@@ -140,3 +140,10 @@ html,body{background:radial-gradient(ellipse at 50% -12%,color-mix(in srgb,var(-
 
 /* The user requested no full-screen outer frame; keep only component frames. */
 .app-shell::before{display:none!important;content:none!important}
+
+/* Scrollable tables: decoration must not sit above moving columns on mobile */
+.table-panel{position:relative;overflow-x:auto!important;overflow-y:visible!important;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-gutter:stable;border-radius:16px!important}
+.table-panel::before,.table-panel::after{display:none!important;content:none!important;background:none!important;box-shadow:none!important;filter:none!important}
+.table-panel table{position:relative;z-index:0;min-width:760px}
+.table-panel .section-head{position:relative;z-index:1}
+@media(max-width:680px){.table-panel{width:100%;max-width:100%;padding-bottom:7px}.table-panel table{min-width:760px}.table-panel .section-head{min-width:0;width:100%;padding-right:16px}}

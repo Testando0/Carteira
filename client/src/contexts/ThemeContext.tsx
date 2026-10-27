@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-export type Theme = "night" | "midnight" | "violet" | "emerald" | "sunset" | "light" | "dark";
+export type Theme = "neutro" | "media" | "violet" | "emerald" | "master" | "night" | "midnight" | "sunset" | "light" | "dark";
 
 export const THEME_OPTIONS: Array<{ id: Theme; label: string; description: string }> = [
-  { id: "night", label: "RGB Night", description: "Ciano, rosa e verde sobre o espaço profundo" },
-  { id: "midnight", label: "Midnight Blue", description: "Azul elétrico com atmosfera noturna" },
-  { id: "violet", label: "Nebula Violet", description: "Violeta cósmico com brilho magenta" },
-  { id: "emerald", label: "Emerald Grid", description: "Verde esmeralda para foco operacional" },
-  { id: "sunset", label: "Solar Sunset", description: "Âmbar e coral com energia quente" },
+  { id: "neutro", label: "Neutro", description: "Preto limpo com brilho branco discreto" },
+  { id: "media", label: "Mídia", description: "Âmbar e laranja com energia quente" },
+  { id: "violet", label: "Violet", description: "Violeta profundo com neon lilás" },
+  { id: "emerald", label: "Emerald", description: "Verde esmeralda operacional" },
+  { id: "master", label: "Master", description: "Vermelho rubi para administração" },
 ];
 
 interface ThemeContextType {
@@ -27,7 +27,7 @@ interface ThemeProviderProps {
   switchable?: boolean;
 }
 
-export function ThemeProvider({ children, defaultTheme = "night", switchable = true }: ThemeProviderProps) {
+export function ThemeProvider({ children, defaultTheme = "neutro", switchable = true }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (!switchable || typeof window === "undefined") return defaultTheme;
     const stored = localStorage.getItem(THEME_KEY) as Theme | null;
@@ -39,8 +39,7 @@ export function ThemeProvider({ children, defaultTheme = "night", switchable = t
   };
 
   useEffect(() => {
-    const root = document.documentElement;
-    root.dataset.theme = theme;
+    document.documentElement.dataset.theme = theme;
     if (switchable) localStorage.setItem(THEME_KEY, theme);
   }, [theme, switchable]);
 

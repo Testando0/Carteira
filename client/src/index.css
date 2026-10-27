@@ -134,3 +134,6 @@ html,body{background:radial-gradient(ellipse at 50% -12%,color-mix(in srgb,var(-
 .stat>*,.panel>*,.company-card>*,.contract-card>*,.report-card>*,.time-banner>*,.payroll-summary>div>*,.login-card>*,.modal>*,.theme-picker>*{position:relative;z-index:2}
 .table-panel{overflow-x:auto!important;overflow-y:hidden!important}
 @media(prefers-reduced-motion:reduce){.app-shell::before,.stat,.panel,.company-card,.contract-card,.report-card,.time-banner,.payroll-summary>div,.login-card,.modal,.theme-picker,.stat::before,.panel::before,.company-card::before,.contract-card::before,.report-card::before,.time-banner::before,.payroll-summary>div::before,.login-card::before,.modal::before,.theme-picker::before,.stat::after,.panel::after,.company-card::after,.contract-card::after,.report-card::after,.time-banner::after,.payroll-summary>div::after,.login-card::after,.modal::after,.theme-picker::after{animation:none!important}}
+
+/* IMG_20261026_222732_931.jpg: remove only the four outer corner brackets */
+.app-shell::before{background:none!important}

@@ -161,3 +161,7 @@ html,body{background:radial-gradient(ellipse at 50% -12%,color-mix(in srgb,var(-
 
 /* User avatar must follow the selected theme, including Redzin's R avatar */
 .avatar{background:linear-gradient(135deg,color-mix(in srgb,var(--theme-accent) 24%,var(--theme-surface-2)),color-mix(in srgb,var(--theme-accent-2) 34%,var(--theme-surface-2)))!important;border-color:var(--theme-accent)!important;color:var(--theme-accent)!important;box-shadow:0 0 18px color-mix(in srgb,var(--theme-accent) 30%,transparent)!important}
+
+/* Open bell state: the halo around the bell must follow the selected theme */
+.notification-wrap.is-open .icon-button,.notification-wrap.is-open .icon-button:hover,.notification-wrap.is-open .icon-button:focus,.notification-wrap.is-open .icon-button:focus-visible{background:color-mix(in srgb,var(--theme-accent) 18%,var(--theme-surface-2))!important;color:var(--theme-accent)!important;border:1px solid var(--theme-accent)!important;outline:none!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--theme-accent) 18%,transparent),0 0 22px color-mix(in srgb,var(--theme-accent-2) 42%,transparent)!important}
+.notification-wrap.is-open .icon-button svg{color:var(--theme-accent)!important;filter:drop-shadow(0 0 5px var(--theme-accent))}

@@ -165,3 +165,11 @@ html,body{background:radial-gradient(ellipse at 50% -12%,color-mix(in srgb,var(-
 /* Open bell state: the halo around the bell must follow the selected theme */
 .notification-wrap.is-open .icon-button,.notification-wrap.is-open .icon-button:hover,.notification-wrap.is-open .icon-button:focus,.notification-wrap.is-open .icon-button:focus-visible{background:color-mix(in srgb,var(--theme-accent) 18%,var(--theme-surface-2))!important;color:var(--theme-accent)!important;border:1px solid var(--theme-accent)!important;outline:none!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--theme-accent) 18%,transparent),0 0 22px color-mix(in srgb,var(--theme-accent-2) 42%,transparent)!important}
 .notification-wrap.is-open .icon-button svg{color:var(--theme-accent)!important;filter:drop-shadow(0 0 5px var(--theme-accent))}
+
+/* Contract document and drawn-signature flow */
+.contract-sign-screen{min-height:100vh;overflow:auto;padding:28px 16px;display:grid;place-items:center}
+.contract-sign-card{width:min(820px,100%);max-height:none!important;overflow:visible!important}
+.contract-sign-card h1{margin:8px 0;font-size:26px}.contract-sign-card>p{color:var(--theme-muted);line-height:1.6}
+.document-preview{margin:18px 0;padding:22px;background:color-mix(in srgb,var(--theme-surface) 88%,var(--theme-bg));border:1px solid var(--theme-border);border-radius:14px;color:var(--theme-text);line-height:1.65}.document-preview h2{font-size:18px;margin-top:0;color:var(--theme-accent)}.document-preview hr{border:0;border-top:1px solid var(--theme-border);margin:16px 0}.document-preview p{font-size:12px}.signed-document{color:var(--theme-accent)!important;font-weight:700}
+.signature-label{display:block;color:var(--theme-muted);font:11px "Space Mono",monospace;text-transform:uppercase;margin:12px 0 7px}.signature-canvas{display:block;width:100%;height:180px;background:#fff;border:2px dashed var(--theme-accent);border-radius:12px;touch-action:none;cursor:crosshair}.signature-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}.contract-sign-card .notice{margin-top:16px}
+@media(max-width:680px){.contract-sign-screen{padding:12px 10px;display:block}.contract-sign-card{margin:0 auto;padding:16px}.signature-canvas{height:150px}.document-preview{padding:15px}}

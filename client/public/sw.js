@@ -1,4 +1,4 @@
-const CACHE_NAME = "carteira-rpg-shell-v2";
+const CACHE_NAME = "carteira-rpg-shell-v3";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/carteira-icon.png", "/icons/carteira-192.png", "/icons/carteira-512.png"];
 
 self.addEventListener("install", event => {

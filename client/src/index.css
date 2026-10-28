@@ -510,3 +510,24 @@ body{font-feature-settings:"cv11" 1,"ss01" 1}.app-shell{background:radial-gradie
   .ref-mobile-app > .ref-drawer-backdrop::before{content:"";position:absolute;inset:0;pointer-events:none}
   .ref-mobile-app > .ref-drawer-backdrop + *{position:relative;z-index:1}
 }
+
+/* Critical mobile navigation fix: the bottom rail must stay attached to the viewport. */
+@media(max-width:760px){
+  .ref-mobile-app > .ref-bottom-nav{
+    position:fixed!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    top:auto!important;
+    z-index:30!important;
+    width:100vw!important;
+    height:76px!important;
+    margin:0!important;
+    transform:none!important;
+  }
+  .ref-mobile-app > .ref-mobile-header{
+    position:sticky!important;
+    top:0!important;
+    z-index:20!important;
+  }
+}

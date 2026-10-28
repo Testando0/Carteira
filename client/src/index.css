@@ -180,3 +180,6 @@ html,body{background:radial-gradient(ellipse at 50% -12%,color-mix(in srgb,var(-
 :root[data-theme="media"] .primary{background:linear-gradient(110deg,#f6b83f,#ffe09a 48%,#bf7613)!important;color:#211302!important}
 :root[data-theme="media"] .brand-mark,:root[data-theme="media"] .hero h1 span,:root[data-theme="media"] code{color:#f4b942!important;text-shadow:0 0 14px #f4b94266}
 .signed-contract-intro{display:flex;align-items:center;gap:12px;margin-bottom:16px;color:var(--theme-accent)}.signed-contract-intro div{display:flex;flex-direction:column;gap:4px}.signed-contract-intro span{font-size:11px;color:var(--theme-muted)}
+
+.credential-hint{grid-column:1/-1;padding:10px 12px;border:1px dashed var(--theme-border);border-radius:10px;color:var(--theme-muted);font-size:10px;line-height:1.5;background:color-mix(in srgb,var(--theme-accent) 6%,transparent)}
+@media(max-width:680px){.credential-hint{grid-column:auto}}

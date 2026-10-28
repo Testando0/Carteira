@@ -29,6 +29,16 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   app.get("/api/health", (_req, res) => res.json({ status: "ok", auth: "local-rpg", websocket: "enabled" }));
+  app.get("/api/users", (_req, res) => res.set("Cache-Control", "no-store").json(users));
+  app.put("/api/users", (req, res) => {
+    if (!Array.isArray(req.body)) return res.status(400).json({ error: "users must be an array" });
+    users = req.body;
+    shared.accounts = users;
+    persistUsers();
+    persistShared();
+    broadcast(JSON.stringify({ type: "accounts-sync", payload: users }));
+    res.set("Cache-Control", "no-store").json({ ok: true, count: users.length });
+  });
   app.get("/api/platform/config.js", (_req, res) => res.set("Cache-Control", "no-store").type("application/javascript").send(publicPlatformScript()));
   wss.on("connection", (socket) => {
     socket.send(JSON.stringify({ type: "connected", source: "carteira-rpg" }));

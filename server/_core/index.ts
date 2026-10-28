@@ -85,7 +85,7 @@ async function startServer() {
     if (!signature || signature.id !== id) return res.status(400).set("Cache-Control", "no-store").json({ error: "invalid signature" });
     const existing = (shared.signatures || []).find(item => item.id === id);
     if (existing) {
-      if (existing.worker === signature.worker && existing.workerSignature === signature.workerSignature) return res.status(200).set("Cache-Control", "no-store").json({ ok: true, duplicate: true });
+      if (existing.worker === signature.worker) return res.status(200).set("Cache-Control", "no-store").json({ ok: true, duplicate: true, existing: true });
       return res.status(409).set("Cache-Control", "no-store").json({ error: "contract already signed" });
     }
     shared.signatures = [...(shared.signatures || []), signature];

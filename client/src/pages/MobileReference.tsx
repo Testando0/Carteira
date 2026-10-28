@@ -107,6 +107,17 @@ export default function MobileReference({
   const [selectedCompany, setSelectedCompany] = useState<any>(null);
   const [selectedContract, setSelectedContract] = useState<any>(null);
   const [drawer, setDrawer] = useState(false);
+  useEffect(() => {
+    const resetScroll = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      document.querySelector<HTMLElement>(".ref-mobile-content")?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    };
+    resetScroll();
+    const frame = window.requestAnimationFrame(resetScroll);
+    return () => window.cancelAnimationFrame(frame);
+  }, [screen]);
   const workers = data.workers || [];
   const companies = data.companies || [];
   const contracts = isWorker ? myContracts : data.contracts || [];

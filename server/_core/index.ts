@@ -42,6 +42,20 @@ async function startServer() {
     }
     return merged;
   };
+  app.post("/api/users", (req, res) => {
+    const user = req.body as { username?: string };
+    const username = usernameOf(user);
+    if (!username || username === "master") return res.status(400).json({ error: "invalid user" });
+    if (users.some(existing => usernameOf(existing) === username)) return res.status(409).json({ error: "user already exists" });
+    deletedUsers.delete(username);
+    users = [...users, user];
+    shared.accounts = users;
+    shared.deletedUsers = [...deletedUsers];
+    persistUsers();
+    persistShared();
+    broadcast(JSON.stringify({ type: "accounts-sync", payload: users }));
+    res.status(201).set("Cache-Control", "no-store").json(user);
+  });
   app.put("/api/users", (req, res) => {
     if (!Array.isArray(req.body)) return res.status(400).json({ error: "users must be an array" });
     users = mergeUsers(req.body);

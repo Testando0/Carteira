@@ -183,3 +183,13 @@ html,body{background:radial-gradient(ellipse at 50% -12%,color-mix(in srgb,var(-
 
 .credential-hint{grid-column:1/-1;padding:10px 12px;border:1px dashed var(--theme-border);border-radius:10px;color:var(--theme-muted);font-size:10px;line-height:1.5;background:color-mix(in srgb,var(--theme-accent) 6%,transparent)}
 @media(max-width:680px){.credential-hint{grid-column:auto}}
+
+/* Mobile-safe forms: keep the close control reachable even for long credential forms */
+.modal-backdrop{overflow-y:auto!important;overflow-x:hidden!important;align-items:flex-start!important;place-items:initial!important;padding:12px!important}
+.modal-backdrop>.modal{margin:0 auto!important;max-height:calc(100vh - 24px)!important;overflow-y:auto!important;overscroll-behavior:contain}
+.modal-head{position:sticky!important;top:-22px!important;z-index:10!important;padding-top:4px!important;padding-bottom:14px!important;margin-bottom:10px!important;background:linear-gradient(var(--theme-surface-2),var(--theme-surface-2))!important}
+/* Notification icon: closed, hover and focus states inherit the selected theme, never blue */
+.notification-wrap .icon-button,.notification-wrap .icon-button:hover,.notification-wrap .icon-button:focus,.notification-wrap .icon-button:focus-visible{background:color-mix(in srgb,var(--theme-surface-2) 88%,transparent)!important;color:var(--theme-accent)!important;border:1px solid var(--theme-border)!important;outline:none!important;box-shadow:none!important}
+.notification-wrap.is-open .icon-button,.notification-wrap.is-open .icon-button:hover,.notification-wrap.is-open .icon-button:focus,.notification-wrap.is-open .icon-button:focus-visible{background:color-mix(in srgb,var(--theme-accent) 18%,var(--theme-surface-2))!important;color:var(--theme-accent)!important;border-color:var(--theme-accent)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--theme-accent) 16%,transparent),0 0 22px color-mix(in srgb,var(--theme-accent-2) 35%,transparent)!important}
+.notification-wrap .icon-button svg{color:currentColor!important;filter:none!important}
+@media(max-width:680px){.modal-backdrop{padding:8px!important}.modal-backdrop>.modal{max-height:calc(100vh - 16px)!important}.modal-head{top:-18px!important}}

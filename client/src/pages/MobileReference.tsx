@@ -142,6 +142,7 @@ export default function MobileReference({
     "new-company": "Nova empresa",
     "new-contract": "Novo contrato",
     signature: "Assinatura de contrato",
+    profile: "Meu perfil",
   };
 
   const Header = ({ back = false }: { back?: boolean }) => (
@@ -167,7 +168,7 @@ export default function MobileReference({
   const Dashboard = () => (
     <>
       <div className="ref-greeting">
-        <div className="ref-avatar">{session.name?.split(" ").map((x: string) => x[0]).slice(0, 2).join("")}</div>
+        <button className="ref-avatar ref-avatar-button" onClick={() => go("profile")}>{session.name?.split(" ").map((x: string) => x[0]).slice(0, 2).join("")}</button>
         <div><span>Olá, {session.name?.split(" ")[0]}</span><small>Bem-vindo(a) ao seu painel</small></div>
         <span className="ref-bell">♧</span>
       </div>
@@ -224,7 +225,20 @@ export default function MobileReference({
   const NewContract = () => <div className="ref-form-screen"><div className="ref-form-grid"><Field label="Trabalhador"><select value={contractForm.worker} onChange={e => setContractForm({ ...contractForm, worker: e.target.value })}>{workers.map((w: any) => <option key={w.id}>{w.name}</option>)}</select></Field><Field label="Empresa"><select value={contractForm.company} onChange={e => setContractForm({ ...contractForm, company: e.target.value })}>{companies.map((c: any) => <option key={c.id}>{c.name}</option>)}</select></Field><Field label="Cargo"><input value={contractForm.role} onChange={e => setContractForm({ ...contractForm, role: e.target.value })} placeholder="Garçom" /></Field><Field label="Salário mensal"><input type="number" value={contractForm.salary} onChange={e => setContractForm({ ...contractForm, salary: e.target.value })} placeholder="1800" /></Field><Field label="Jornada"><input value={contractForm.schedule} onChange={e => setContractForm({ ...contractForm, schedule: e.target.value })} placeholder="08h às 17h" /></Field><Field label="Admissão"><input type="date" value={contractForm.admitted} onChange={e => setContractForm({ ...contractForm, admitted: e.target.value })} /></Field></div><button className="ref-primary ref-wide" onClick={onAddContract}><FileCheck2 size={17} /> Criar contrato</button></div>;
   const Signature = () => selectedContract && <div className="ref-signature-screen"><FileText size={54} /><h2>Assinatura de contrato</h2><p>Você está prestes a assinar o contrato de trabalho de <b>{selectedContract.worker}</b>.</p><div className="ref-check-box"><span>✓</span> Li e concordo com os termos do contrato</div><div className="ref-check-box"><span>✓</span> Desejo fazer a assinatura digital</div><button className="ref-primary ref-wide" onClick={() => { onSignContract(selectedContract); setScreen("contract"); }}><Check size={17} /> Assinar contrato</button></div>;
 
-  const MenuScreen = () => <><div className="ref-menu-profile"><div className="ref-avatar">{session.name?.split(" ").map((x: string) => x[0]).slice(0, 2).join("")}</div><div><b>{session.name}</b><small>{session.role}</small></div></div>{[[Home,"Início","home"],[UsersRound,"Trabalhadores","workers"],[Building2,"Empresas","companies"],[FileText,"Contratos","contracts"],[Clock3,"Ponto","time"],[WalletCards,"Salários","payroll"],[Settings2,"Configurações","sync"],[Smartphone,"Android","android"]].map(([Icon,label,next]: any) => <button className="ref-menu-row" key={next} onClick={() => go(next)}><Icon size={19}/><span>{label}</span><ChevronRight size={16}/></button>)}<button className="ref-menu-row danger" onClick={onLogout}><LogOut size={19}/><span>Sair</span></button></>;
+  const Profile = () => {
+    const myPayments = payments.length;
+    const myPunches = (data.punches || []).filter((p: any) => !isWorker || p.worker === session.name).length;
+    return <>
+      <div className="ref-profile-head"><div className="ref-profile-photo">{session.name?.split(" ").map((x: string) => x[0]).slice(0, 2).join("")}</div><div><h2>{session.name}</h2><span>@{session.username}</span></div><em>Ativo</em></div>
+      <div className="ref-profile-role"><UserRound size={17} /><span><small>Perfil de acesso</small><b>{session.role}</b></span></div>
+      <div className="ref-detail-grid"><div><small>Contratos registrados</small><b>{myContracts.length}</b></div><div><small>Pagamentos vinculados</small><b>{myPayments}</b></div><div><small>Ponto registrado</small><b>{myPunches}</b></div><div><small>Conexão</small><b>{online ? "Online" : "Local"}</b></div></div>
+      <div className="ref-mobile-section-title"><span>meus vínculos</span></div>
+      <div className="ref-list-card">{myContracts.map((c: any) => <Card key={c.id} className="ref-history-row" onClick={() => openContract(c)}><span><b>{c.company}</b><small>{c.role} • {money(c.salary)}</small></span><em>{c.status}</em><ChevronRight /></Card>)}{!myContracts.length && <div className="ref-empty">Você ainda não possui contratos registrados.</div>}</div>
+      <button className="ref-danger ref-wide" onClick={onLogout}><LogOut size={16} /> Sair da conta</button>
+    </>;
+  };
+
+  const MenuScreen = () => <><div className="ref-menu-profile"><div className="ref-avatar">{session.name?.split(" ").map((x: string) => x[0]).slice(0, 2).join("")}</div><div><b>{session.name}</b><small>{session.role}</small></div></div>{[[Home,"Início","home"],[UsersRound,"Trabalhadores","workers"],[Building2,"Empresas","companies"],[FileText,"Contratos","contracts"],[Clock3,"Ponto","time"],[WalletCards,"Salários","payroll"],[UserRound,"Meu perfil","profile"],[Settings2,"Configurações","sync"],[Smartphone,"Android","android"]].map(([Icon,label,next]: any) => <button className="ref-menu-row" key={next} onClick={() => go(next)}><Icon size={19}/><span>{label}</span><ChevronRight size={16}/></button>)}<button className="ref-menu-row danger" onClick={onLogout}><LogOut size={19}/><span>Sair</span></button></>;
 
   const Sync = () => <div className="ref-center-screen"><Wifi size={52}/><h2>Dados sincronizados</h2><p>Seus registros estão seguros e disponíveis em todos os seus dispositivos.</p><div className="ref-sync-status"><span><Check size={15}/></span>{online ? "Conectado • banco de dados online" : "Modo local • aguardando conexão"}</div><button className="ref-primary ref-wide" onClick={onExportBackup}><ShieldCheck size={17}/> Exportar backup</button></div>;
   const Android = () => <div className="ref-center-screen"><Smartphone size={58}/><h2>Disponível para Android</h2><p>Instale a Carteira RP no celular para acessar ponto, contratos e holerites.</p><div className="ref-checks"><span><Check /> APK instalável</span><span><Check /> Funciona offline e online</span><span><Check /> Compartilhamento entre celulares</span><span><Check /> Seguro e criptografado</span></div><button className="ref-primary ref-wide" onClick={() => alert("A versão Android será disponibilizada em breve.")}>Instalar</button></div>;
@@ -247,6 +261,7 @@ export default function MobileReference({
     if (screen === "menu") return <MenuScreen />;
     if (screen === "sync") return <Sync />;
     if (screen === "android") return <Android />;
+    if (screen === "profile") return <Profile />;
     return <Dashboard />;
   };
 

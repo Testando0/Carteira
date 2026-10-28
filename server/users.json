@@ -1,0 +1,10 @@
+[
+  {
+    "id": "ACC-001",
+    "name": "Admin Master",
+    "username": "master",
+    "role": "Admin Master",
+    "password": "master123",
+    "active": true
+  }
+]

@@ -13,9 +13,18 @@ async function startServer() {
   const wss = new WebSocketServer({ noServer: true });
   type SharedState = { data?: unknown; accounts?: unknown[] };
   const stateFile = path.resolve(process.cwd(), "data", "carteira-shared-state.json");
+  const usersFile = path.resolve(process.cwd(), "server", "users.json");
   let shared: SharedState = {};
   try { shared = JSON.parse(fs.readFileSync(stateFile, "utf8")) as SharedState; } catch { shared = {}; }
+  let users: unknown[] = [];
+  try { const fileUsers = JSON.parse(fs.readFileSync(usersFile, "utf8")); if (Array.isArray(fileUsers)) users = fileUsers; } catch { users = []; }
+  if (Array.isArray(shared.accounts)) {
+    const usernames = new Set(users.map(user => String((user as { username?: string }).username || "").toLowerCase()));
+    users = [...users, ...shared.accounts.filter(user => !usernames.has(String((user as { username?: string }).username || "").toLowerCase()))];
+  }
+  shared.accounts = users;
   const persistShared = () => { fs.mkdirSync(path.dirname(stateFile), { recursive: true }); fs.writeFileSync(stateFile, JSON.stringify(shared)); };
+  const persistUsers = () => { fs.mkdirSync(path.dirname(usersFile), { recursive: true }); fs.writeFileSync(usersFile, JSON.stringify(users, null, 2) + "\n"); };
   const broadcast = (message: string, except?: WebSocket) => { for (const client of wss.clients) if (client !== except && client.readyState === WebSocket.OPEN) client.send(message); };
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -24,12 +33,12 @@ async function startServer() {
   wss.on("connection", (socket) => {
     socket.send(JSON.stringify({ type: "connected", source: "carteira-rpg" }));
     if (shared.data) socket.send(JSON.stringify({ type: "store-sync", payload: shared.data }));
-    socket.send(JSON.stringify({ type: "accounts-sync", payload: shared.accounts ?? [] }));
+    socket.send(JSON.stringify({ type: "accounts-sync", payload: users }));
     socket.on("message", (raw) => {
       try {
         const message = JSON.parse(raw.toString()) as { type?: string; payload?: unknown };
         if (message.type === "store-sync") { shared.data = message.payload; persistShared(); }
-        if (message.type === "accounts-sync" && Array.isArray(message.payload)) { shared.accounts = message.payload; persistShared(); }
+        if (message.type === "accounts-sync" && Array.isArray(message.payload)) { users = message.payload; shared.accounts = users; persistUsers(); persistShared(); }
       } catch { /* Ignore malformed client messages and keep the socket alive. */ }
       broadcast(raw.toString(), socket);
     });

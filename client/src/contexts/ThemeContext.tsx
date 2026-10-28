@@ -4,7 +4,7 @@ export type Theme = "neutro" | "media" | "violet" | "emerald" | "master" | "nigh
 
 export const THEME_OPTIONS: Array<{ id: Theme; label: string; description: string }> = [
   { id: "neutro", label: "Neutro", description: "Preto limpo com brilho branco discreto" },
-  { id: "media", label: "Mídia", description: "Âmbar e laranja com energia quente" },
+  { id: "media", label: "Dourado", description: "Carteira clássica em preto, ouro e âmbar" },
   { id: "violet", label: "Violet", description: "Violeta profundo com neon lilás" },
   { id: "emerald", label: "Emerald", description: "Verde esmeralda operacional" },
   { id: "master", label: "Master", description: "Vermelho rubi para administração" },
@@ -18,7 +18,7 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-const THEME_KEY = "carteira-theme";
+const THEME_KEY = "carteira-theme-v2";
 const validThemes = new Set<Theme>(THEME_OPTIONS.map(option => option.id));
 
 interface ThemeProviderProps {
@@ -27,7 +27,7 @@ interface ThemeProviderProps {
   switchable?: boolean;
 }
 
-export function ThemeProvider({ children, defaultTheme = "neutro", switchable = true }: ThemeProviderProps) {
+export function ThemeProvider({ children, defaultTheme = "media", switchable = true }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (!switchable || typeof window === "undefined") return defaultTheme;
     const stored = localStorage.getItem(THEME_KEY) as Theme | null;

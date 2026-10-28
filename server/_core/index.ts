@@ -11,12 +11,13 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   const wss = new WebSocketServer({ noServer: true });
-  type SharedState = { data?: unknown; accounts?: unknown[] };
+  type SharedState = { data?: unknown; accounts?: unknown[]; deletedUsers?: string[] };
   const stateFile = path.resolve(process.cwd(), "data", "carteira-shared-state.json");
   const usersFile = path.resolve(process.cwd(), "server", "users.json");
   let shared: SharedState = {};
   try { shared = JSON.parse(fs.readFileSync(stateFile, "utf8")) as SharedState; } catch { shared = {}; }
   let users: unknown[] = [];
+  const deletedUsers = new Set<string>(Array.isArray(shared.deletedUsers) ? shared.deletedUsers : []);
   try { const fileUsers = JSON.parse(fs.readFileSync(usersFile, "utf8")); if (Array.isArray(fileUsers)) users = fileUsers; } catch { users = []; }
   if (Array.isArray(shared.accounts)) {
     const usernames = new Set(users.map(user => String((user as { username?: string }).username || "").toLowerCase()));
@@ -30,9 +31,32 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   app.get("/api/health", (_req, res) => res.json({ status: "ok", auth: "local-rpg", websocket: "enabled" }));
   app.get("/api/users", (_req, res) => res.set("Cache-Control", "no-store").json(users));
+  const usernameOf = (user: unknown) => String((user as { username?: string })?.username || "").trim().toLowerCase();
+  const mergeUsers = (incoming: unknown[]) => {
+    const merged = [...users];
+    for (const user of incoming) {
+      const username = usernameOf(user);
+      if (!username || deletedUsers.has(username)) continue;
+      const index = merged.findIndex(existing => usernameOf(existing) === username);
+      if (index >= 0) merged[index] = user; else merged.push(user);
+    }
+    return merged;
+  };
   app.put("/api/users", (req, res) => {
     if (!Array.isArray(req.body)) return res.status(400).json({ error: "users must be an array" });
-    users = req.body;
+    users = mergeUsers(req.body);
+    shared.accounts = users;
+    persistUsers();
+    persistShared();
+    broadcast(JSON.stringify({ type: "accounts-sync", payload: users }));
+    res.set("Cache-Control", "no-store").json({ ok: true, count: users.length });
+  });
+  app.delete("/api/users/:username", (req, res) => {
+    const username = String(req.params.username || "").trim().toLowerCase();
+    if (!username || username === "master") return res.status(400).json({ error: "invalid user" });
+    deletedUsers.add(username);
+    shared.deletedUsers = [...deletedUsers];
+    users = users.filter(user => usernameOf(user) !== username);
     shared.accounts = users;
     persistUsers();
     persistShared();
@@ -48,7 +72,7 @@ async function startServer() {
       try {
         const message = JSON.parse(raw.toString()) as { type?: string; payload?: unknown };
         if (message.type === "store-sync") { shared.data = message.payload; persistShared(); }
-        if (message.type === "accounts-sync" && Array.isArray(message.payload)) { users = message.payload; shared.accounts = users; persistUsers(); persistShared(); }
+        if (message.type === "accounts-sync" && Array.isArray(message.payload)) { users = mergeUsers(message.payload); shared.accounts = users; persistUsers(); persistShared(); }
       } catch { /* Ignore malformed client messages and keep the socket alive. */ }
       broadcast(raw.toString(), socket);
     });

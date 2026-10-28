@@ -80,7 +80,7 @@ async function startServer() {
   app.get("/api/platform/config.js", (_req, res) => res.set("Cache-Control", "no-store").type("application/javascript").send(publicPlatformScript()));
   wss.on("connection", (socket) => {
     socket.send(JSON.stringify({ type: "connected", source: "carteira-rpg" }));
-    if (shared.data) socket.send(JSON.stringify({ type: "store-sync", payload: shared.data }));
+    if (shared.data) socket.send(JSON.stringify({ type: "store-sync", source: "snapshot", payload: shared.data }));
     socket.send(JSON.stringify({ type: "accounts-sync", payload: users }));
     socket.on("message", (raw) => {
       try {

@@ -6,12 +6,13 @@ import path from "path";
 import { WebSocketServer, WebSocket } from "ws";
 import { publicPlatformScript } from "./publicConfig";
 import { serveStatic, setupVite } from "./vite";
+import { parseSignedContractPayload, type SignedContractPayload } from "../../shared/storeSync";
 
 async function startServer() {
   const app = express();
   const server = createServer(app);
   const wss = new WebSocketServer({ noServer: true });
-  type SharedState = { data?: unknown; accounts?: unknown[]; deletedUsers?: string[] };
+  type SharedState = { data?: unknown; accounts?: unknown[]; deletedUsers?: string[]; signatures?: SignedContractPayload[] };
   const stateFile = path.resolve(process.cwd(), "data", "carteira-shared-state.json");
   const usersFile = path.resolve(process.cwd(), "server", "users.json");
   let shared: SharedState = {};
@@ -24,6 +25,7 @@ async function startServer() {
     users = [...users, ...shared.accounts.filter(user => !usernames.has(String((user as { username?: string }).username || "").toLowerCase()))];
   }
   shared.accounts = users;
+  shared.signatures = Array.isArray(shared.signatures) ? shared.signatures.filter(signature => Boolean(parseSignedContractPayload(signature))) as SignedContractPayload[] : [];
   const persistShared = () => { fs.mkdirSync(path.dirname(stateFile), { recursive: true }); fs.writeFileSync(stateFile, JSON.stringify(shared)); };
   const persistUsers = () => { fs.mkdirSync(path.dirname(usersFile), { recursive: true }); fs.writeFileSync(usersFile, JSON.stringify(users, null, 2) + "\n"); };
   const broadcast = (message: string, except?: WebSocket) => { for (const client of wss.clients) if (client !== except && client.readyState === WebSocket.OPEN) client.send(message); };
@@ -77,10 +79,25 @@ async function startServer() {
     broadcast(JSON.stringify({ type: "accounts-sync", payload: users }));
     res.set("Cache-Control", "no-store").json({ ok: true, count: users.length });
   });
+  app.post("/api/contracts/:id/signature", (req, res) => {
+    const id = String(req.params.id || "").trim();
+    const signature = parseSignedContractPayload({ ...req.body, id });
+    if (!signature || signature.id !== id) return res.status(400).set("Cache-Control", "no-store").json({ error: "invalid signature" });
+    const existing = (shared.signatures || []).find(item => item.id === id);
+    if (existing) {
+      if (existing.worker === signature.worker && existing.workerSignature === signature.workerSignature) return res.status(200).set("Cache-Control", "no-store").json({ ok: true, duplicate: true });
+      return res.status(409).set("Cache-Control", "no-store").json({ error: "contract already signed" });
+    }
+    shared.signatures = [...(shared.signatures || []), signature];
+    persistShared();
+    broadcast(JSON.stringify({ type: "signature-received", payload: signature }));
+    return res.status(201).set("Cache-Control", "no-store").json({ ok: true, received: true });
+  });
   app.get("/api/platform/config.js", (_req, res) => res.set("Cache-Control", "no-store").type("application/javascript").send(publicPlatformScript()));
   wss.on("connection", (socket) => {
     socket.send(JSON.stringify({ type: "connected", source: "carteira-rpg" }));
     if (shared.data) socket.send(JSON.stringify({ type: "store-sync", source: "snapshot", payload: shared.data }));
+    for (const signature of shared.signatures || []) socket.send(JSON.stringify({ type: "signature-received", payload: signature }));
     socket.send(JSON.stringify({ type: "accounts-sync", payload: users }));
     socket.on("message", (raw) => {
       try {

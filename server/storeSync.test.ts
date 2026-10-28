@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   applySignedContract,
   isOperatorStoreUpdate,
+  parseSignedContractPayload,
   storeSnapshotsEqual,
   type ContractStore,
 } from "../shared/storeSync";
@@ -60,6 +61,24 @@ describe("WebSocket store sync", () => {
 });
 
 describe("signed contract receipt", () => {
+  it("validates the direct server delivery payload", () => {
+    expect(parseSignedContractPayload(signedPayload)).toMatchObject(
+      signedPayload
+    );
+    expect(
+      parseSignedContractPayload({
+        ...signedPayload,
+        workerSignature: "not-an-image",
+      })
+    ).toBeNull();
+    expect(
+      parseSignedContractPayload({
+        ...signedPayload,
+        signedAt: "not-a-date",
+      })
+    ).toBeNull();
+  });
+
   it("keeps a return link pending until its contract has synchronized", () => {
     const result = applySignedContract(
       { contracts: [], notifications: 0, audits: [] },

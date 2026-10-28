@@ -35,6 +35,33 @@ export type SignatureReceipt<T> = {
   store: T;
 };
 
+export function parseSignedContractPayload(
+  payload: unknown
+): SignedContractPayload | null {
+  if (!payload || typeof payload !== "object") return null;
+  const signed = payload as Partial<SignedContractPayload>;
+  if (
+    typeof signed.id !== "string" ||
+    !signed.id.trim() ||
+    typeof signed.worker !== "string" ||
+    !signed.worker.trim() ||
+    signed.workerSigned !== true ||
+    typeof signed.workerSignature !== "string" ||
+    !/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(signed.workerSignature) ||
+    typeof signed.signedAt !== "string" ||
+    Number.isNaN(Date.parse(signed.signedAt))
+  ) {
+    return null;
+  }
+  return {
+    id: signed.id,
+    worker: signed.worker,
+    workerSigned: true,
+    workerSignature: signed.workerSignature,
+    signedAt: signed.signedAt,
+  };
+}
+
 export function isOperatorStoreUpdate(message: unknown): boolean {
   if (!message || typeof message !== "object") return false;
   const candidate = message as { type?: unknown; source?: unknown };
@@ -54,7 +81,6 @@ export function storeSnapshotsEqual(left: unknown, right: unknown): boolean {
       }
       return current;
     });
-
   return stableStringify(left) === stableStringify(right);
 }
 
@@ -64,34 +90,16 @@ export function applySignedContract<T extends ContractStore>(
   auditId: string,
   receivedAt = "agora"
 ): SignatureReceipt<T> {
-  if (!payload || typeof payload !== "object")
-    return { status: "invalid", store };
-
-  const signed = payload as Partial<SignedContractPayload>;
-  if (
-    typeof signed.id !== "string" ||
-    !signed.id.trim() ||
-    typeof signed.worker !== "string" ||
-    !signed.worker.trim() ||
-    signed.workerSigned !== true ||
-    typeof signed.workerSignature !== "string" ||
-    !/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(signed.workerSignature) ||
-    typeof signed.signedAt !== "string" ||
-    Number.isNaN(Date.parse(signed.signedAt))
-  ) {
-    return { status: "invalid", store };
-  }
-
+  const signed = parseSignedContractPayload(payload);
+  if (!signed) return { status: "invalid", store };
   const current = store.contracts.find(contract => contract.id === signed.id);
   if (!current) return { status: "missing", store };
   if (current.worker !== signed.worker) return { status: "invalid", store };
-
   if (current.workerSigned && current.workerSignature) {
     return current.workerSignature === signed.workerSignature
       ? { status: "duplicate", store }
       : { status: "invalid", store };
   }
-
   const next = {
     ...store,
     notifications: (store.notifications || 0) + 1,
@@ -116,6 +124,5 @@ export function applySignedContract<T extends ContractStore>(
       ...(store.audits || []),
     ],
   };
-
   return { status: "updated", store: next as T };
 }

@@ -24,7 +24,7 @@ async function startServer() {
   wss.on("connection", (socket) => {
     socket.send(JSON.stringify({ type: "connected", source: "carteira-rpg" }));
     if (shared.data) socket.send(JSON.stringify({ type: "store-sync", payload: shared.data }));
-    if (shared.accounts) socket.send(JSON.stringify({ type: "accounts-sync", payload: shared.accounts }));
+    socket.send(JSON.stringify({ type: "accounts-sync", payload: shared.accounts ?? [] }));
     socket.on("message", (raw) => {
       try {
         const message = JSON.parse(raw.toString()) as { type?: string; payload?: unknown };

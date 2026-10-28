@@ -38,7 +38,7 @@ async function startServer() {
       const username = usernameOf(user);
       if (!username || deletedUsers.has(username)) continue;
       const index = merged.findIndex(existing => usernameOf(existing) === username);
-      if (index >= 0) merged[index] = user; else merged.push(user);
+      if (index < 0) merged.push(user);
     }
     return merged;
   };

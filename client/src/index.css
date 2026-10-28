@@ -386,3 +386,55 @@ body{font-feature-settings:"cv11" 1,"ss01" 1}.app-shell{background:radial-gradie
 @media(prefers-reduced-motion:reduce){
   .ref-card,.ref-primary,.ref-secondary-action,.ref-finish-action{transition:none!important}
 }
+
+/* GMPOL-inspired visual refinement: cockpit texture, restrained rails and readable motion. */
+.app-shell{
+  background-color:var(--theme-bg,var(--bg));
+  background-image:
+    radial-gradient(ellipse 70% 42% at 52% -12%,color-mix(in srgb,var(--theme-accent,var(--green)) 12%,transparent),transparent 72%),
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);
+  background-size:auto,44px 44px,44px 44px;
+}
+.workspace{background:linear-gradient(180deg,rgba(0,0,0,.04),transparent 30%);}
+.stat,.panel,.company-card,.contract-card,.report-card,.time-banner,.payroll-summary>div,.login-card,.modal{
+  background-image:
+    linear-gradient(145deg,color-mix(in srgb,var(--theme-surface,var(--panel)) 96%,transparent),color-mix(in srgb,var(--theme-bg,var(--bg)) 92%,transparent)),
+    repeating-linear-gradient(135deg,transparent 0 22px,rgba(255,255,255,.012) 22px 23px);
+  background-blend-mode:normal,screen;
+}
+.stat:hover,.panel:hover,.company-card:hover,.contract-card:hover,.report-card:hover,.time-banner:hover{
+  box-shadow:0 0 22px color-mix(in srgb,var(--frame-hot,var(--theme-accent,var(--green))) 20%,transparent),0 18px 44px rgba(0,0,0,.38),inset 0 0 20px rgba(255,255,255,.035)!important;
+}
+.ref-mobile-app{
+  background-color:var(--app-bg)!important;
+  background-image:
+    radial-gradient(ellipse 90% 38% at 50% -10%,color-mix(in srgb,var(--app-accent) 13%,transparent),transparent 72%),
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px)!important;
+  background-size:auto,36px 36px,36px 36px!important;
+  isolation:isolate;
+}
+.ref-mobile-app::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 18%,transparent 82%,rgba(0,0,0,.2));
+  opacity:.7;
+}
+.ref-mobile-header{
+  box-shadow:0 1px 0 color-mix(in srgb,var(--app-accent) 18%,transparent),0 12px 28px color-mix(in srgb,var(--app-bg) 55%,transparent)!important;
+}
+.ref-mobile-header::after{
+  content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--app-accent),var(--app-accent-2),transparent);
+  opacity:.6;transform-origin:left;animation:gmpol-mobile-sweep 4.8s ease-in-out infinite;
+}
+.ref-mobile-icon,.ref-bell,.ref-menu-row{transition:border-color .2s ease,background .2s ease,transform .2s ease,box-shadow .2s ease!important}
+.ref-mobile-icon:hover,.ref-bell:hover,.ref-menu-row:hover{
+  border-color:var(--app-accent)!important;
+  box-shadow:0 0 16px color-mix(in srgb,var(--app-accent) 18%,transparent);
+}
+.ref-mobile-section-title span::before{
+  content:"//";margin-right:7px;color:var(--app-accent);opacity:.7;font-family:"Space Mono",monospace;
+}
+@keyframes gmpol-mobile-sweep{0%,100%{opacity:.25;transform:scaleX(.35)}50%{opacity:.85;transform:scaleX(1)}}
+@media(prefers-reduced-motion:reduce){.ref-mobile-header::after{animation:none!important}.app-shell{background-image:radial-gradient(ellipse 70% 42% at 52% -12%,color-mix(in srgb,var(--theme-accent,var(--green)) 12%,transparent),transparent 72%)}}

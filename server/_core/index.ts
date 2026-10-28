@@ -1,6 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
+import fs from "fs";
+import path from "path";
 import { WebSocketServer, WebSocket } from "ws";
 import { publicPlatformScript } from "./publicConfig";
 import { serveStatic, setupVite } from "./vite";
@@ -9,16 +11,27 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   const wss = new WebSocketServer({ noServer: true });
+  type SharedState = { data?: unknown; accounts?: unknown[] };
+  const stateFile = path.resolve(process.cwd(), "data", "carteira-shared-state.json");
+  let shared: SharedState = {};
+  try { shared = JSON.parse(fs.readFileSync(stateFile, "utf8")) as SharedState; } catch { shared = {}; }
+  const persistShared = () => { fs.mkdirSync(path.dirname(stateFile), { recursive: true }); fs.writeFileSync(stateFile, JSON.stringify(shared)); };
+  const broadcast = (message: string, except?: WebSocket) => { for (const client of wss.clients) if (client !== except && client.readyState === WebSocket.OPEN) client.send(message); };
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   app.get("/api/health", (_req, res) => res.json({ status: "ok", auth: "local-rpg", websocket: "enabled" }));
   app.get("/api/platform/config.js", (_req, res) => res.set("Cache-Control", "no-store").type("application/javascript").send(publicPlatformScript()));
   wss.on("connection", (socket) => {
     socket.send(JSON.stringify({ type: "connected", source: "carteira-rpg" }));
+    if (shared.data) socket.send(JSON.stringify({ type: "store-sync", payload: shared.data }));
+    if (shared.accounts) socket.send(JSON.stringify({ type: "accounts-sync", payload: shared.accounts }));
     socket.on("message", (raw) => {
-      for (const client of wss.clients) {
-        if (client !== socket && client.readyState === WebSocket.OPEN) client.send(raw.toString());
-      }
+      try {
+        const message = JSON.parse(raw.toString()) as { type?: string; payload?: unknown };
+        if (message.type === "store-sync") { shared.data = message.payload; persistShared(); }
+        if (message.type === "accounts-sync" && Array.isArray(message.payload)) { shared.accounts = message.payload; persistShared(); }
+      } catch { /* Ignore malformed client messages and keep the socket alive. */ }
+      broadcast(raw.toString(), socket);
     });
   });
   const heartbeat = setInterval(() => {

@@ -142,6 +142,7 @@ export default function MobileReference({
     termination: "Rescisão",
     menu: "Menu",
     sync: "Sincronização",
+    activity: "Atividades recentes",
     android: "Carteira no Android",
     "new-worker": "Novo trabalhador",
     "new-company": "Nova empresa",
@@ -184,7 +185,7 @@ export default function MobileReference({
         <Card onClick={() => go("contracts")}><FileText /><b>{contracts.length}</b><span>Contratos ativos</span></Card>
         <Card onClick={() => go("payroll")}><WalletCards /><b>{money(pending)}</b><span>Salários pendentes</span></Card>
       </div>
-      <div className="ref-mobile-section-title"><span>atividades recentes</span><button onClick={() => go("sync")}>ver tudo</button></div>
+      <div className="ref-mobile-section-title"><span>atividades recentes</span><button onClick={() => go("activity")}>ver tudo</button></div>
       <div className="ref-list-card">
         {(data.audits || []).slice(0, 5).map((item: any) => <button className="ref-activity" key={item.id}><span className="ref-activity-icon"><Check size={15} /></span><span><b>{item.action}</b><small>{item.detail}</small></span><time>{item.when}</time><ChevronRight size={15} /></button>)}
         {!data.audits?.length && <div className="ref-empty">Nenhuma atividade registrada ainda.</div>}
@@ -193,6 +194,7 @@ export default function MobileReference({
     </>
   );
 
+  const ActivityScreen = () => <><div className="ref-screen-intro"><span className="ref-screen-kicker">registro operacional</span><h2>Atividades recentes</h2><p>Histórico de alterações e eventos registrados na carteira.</p></div><div className="ref-list-card ref-activity-history">{(data.audits || []).map((item: any) => <div className="ref-activity-history-row" key={item.id}><span className={`ref-activity-icon ${item.tone || "green"}`}><Check size={15} /></span><span><b>{item.action}</b><small>{item.detail}</small></span><time>{item.when}</time></div>)}{!data.audits?.length && <div className="ref-empty">Nenhuma atividade registrada ainda.</div>}</div></>;
   const Workers = () => (
     <>
       <div className="ref-search">⌕ <input placeholder="Buscar por nome, ID ou empresa..." /></div>
@@ -275,6 +277,7 @@ export default function MobileReference({
     if (screen === "signature") return <Signature />;
     if (screen === "menu") return <MenuScreen />;
     if (screen === "sync") return <Sync />;
+    if (screen === "activity") return <ActivityScreen />;
     if (screen === "android") return <Android />;
     if (screen === "profile") return <Profile />;
     if (screen === "themes") return <Themes />;

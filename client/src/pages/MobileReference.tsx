@@ -324,9 +324,9 @@ export default function MobileReference({
     if (screen === "history") return <History />;
     if (screen === "termination") return <Termination />;
     if (screen === "termination-form") return <TerminationForm />;
-    if (screen === "new-worker") return <NewWorker />;
-    if (screen === "new-company") return <NewCompany />;
-    if (screen === "new-contract") return <NewContract />;
+    if (screen === "new-worker") return NewWorker();
+    if (screen === "new-company") return NewCompany();
+    if (screen === "new-contract") return NewContract();
     if (screen === "signature") return <Signature />;
     if (screen === "menu") return <MenuScreen />;
     if (screen === "sync") return <Sync />;

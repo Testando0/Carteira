@@ -3,7 +3,10 @@ import { calculateSalary } from "../lib/payroll";
 import { THEME_OPTIONS, useTheme } from "../contexts/ThemeContext";
 import {
   ArrowLeft,
+  BarChart3,
+  Bell,
   Building2,
+  CalendarDays,
   Check,
   ChevronRight,
   Clock3,
@@ -194,20 +197,21 @@ export default function MobileReference({
     "new-contract": "Novo contrato",
     signature: "Assinatura de contrato",
     profile: "Meu perfil",
+    reports: "Relatórios",
     accounts: "Contas e acessos",
   };
 
   const Header = ({ back = false }: { back?: boolean }) => (
-    <header className="ref-mobile-header">
+    <header className={`ref-mobile-header ${!back ? "ref-home-header" : ""}`}>
       <button
         className="ref-mobile-icon"
         aria-label={back ? "Voltar" : "Abrir menu"}
         onClick={() => (back ? setScreen("home") : setDrawer(true))}
       >
-        {back ? <ArrowLeft size={20} /> : <Menu size={20} />}
+        {back ? <ArrowLeft size={20} /> : <Menu size={24} />}
       </button>
-      <div className="ref-mobile-title">{title[screen]}</div>
-      <div className="ref-mobile-status"><span /> {online ? "online" : "local"}</div>
+      {!back ? <div className="ref-reference-brand"><span className="ref-brand-badge">★</span><div><strong>CARTEIRA DE<br /><b>TRABALHO RP</b></strong><small>REGISTRO DE TRABALHADORES</small></div></div> : <div className="ref-mobile-title">{title[screen]}</div>}
+      {!back ? <button className="ref-reference-bell" aria-label="Notificações"><Bell size={23} /><i>{data.notifications || 0}</i></button> : <div className="ref-mobile-status"><span /> {online ? "online" : "local"}</div>}
     </header>
   );
 
@@ -219,32 +223,40 @@ export default function MobileReference({
 
   const Dashboard = () => (
     <>
-      <div className="ref-greeting">
+      <div className="ref-greeting ref-reference-greeting">
         <button className="ref-avatar ref-avatar-button" onClick={() => go("profile")}>{session.name?.split(" ").map((x: string) => x[0]).slice(0, 2).join("")}</button>
-        <div><span>Olá, {session.name?.split(" ")[0]}</span><small>Bem-vindo(a) ao seu painel</small></div>
-        <span className="ref-bell">♧</span>
+        <div className="ref-welcome-copy"><span>Olá, {session.name?.split(" ")[0]} <b>♛</b></span><small>Bem-vindo(a) ao seu painel!</small></div>
+        <div className="ref-date-card"><CalendarDays size={22} /><span>{new Date().toLocaleDateString("pt-BR", { weekday: "long" })}<b>{new Date().toLocaleDateString("pt-BR")}</b></span></div>
       </div>
-      <div className="ref-mobile-section-title"><span>visão geral</span><b>Hoje</b></div>
-      <div className="ref-stats-grid">
-        <Card onClick={() => go("workers")}><UsersRound /><b>{workers.length}</b><span>Trabalhadores</span></Card>
-        <Card onClick={() => go("companies")}><Building2 /><b>{companies.length}</b><span>Empresas</span></Card>
-        <Card onClick={() => go("contracts")}><FileText /><b>{contracts.length}</b><span>Contratos ativos</span></Card>
-        <Card onClick={() => go("payroll")}><WalletCards /><b>{money(pending)}</b><span>Salários pendentes</span></Card>
-      </div>
-      <div className="ref-quick-grid">
-        <Card onClick={() => go("salary-calc")}><WalletCards /><b>Salário</b><span>Calcular pagamento</span></Card>
-        <Card onClick={() => go("termination")}><FileText /><b>Rescisão</b><span>Calcular desligamento</span></Card>
-        <Card onClick={() => go("history")}><Clock3 /><b>Histórico</b><span>Ver registros</span></Card>
-      </div>
-      <div className="ref-mobile-section-title"><span>atividades recentes</span><button onClick={() => go("activity")}>ver tudo</button></div>
-      <div className="ref-list-card">
-        {(data.audits || []).slice(0, 5).map((item: any) => <button className="ref-activity" key={item.id}><span className="ref-activity-icon"><Check size={15} /></span><span><b>{item.action}</b><small>{item.detail}</small></span><time>{item.when}</time><ChevronRight size={15} /></button>)}
-        {!data.audits?.length && <div className="ref-empty">Nenhuma atividade registrada ainda.</div>}
-      </div>
-      <Card className="ref-punch-shortcut" onClick={() => go("time")}><Fingerprint /><span><b>Registrar ponto</b><small>Entrada, intervalo ou saída</small></span><ChevronRight /></Card>
+      <section className="ref-reference-section ref-overview-section">
+        <div className="ref-reference-section-head"><span className="ref-section-icon">▥</span><b>VISÃO GERAL</b><button onClick={() => go("activity")}>Ver detalhes <ChevronRight size={15} /></button></div>
+        <div className="ref-stats-grid">
+          <Card className="ref-reference-stat stat-workers" onClick={() => go("workers")}><UsersRound /><b>{workers.length}</b><span>Trabalhadores</span><em>↑ +12%</em></Card>
+          <Card className="ref-reference-stat stat-companies" onClick={() => go("companies")}><Building2 /><b>{companies.length}</b><span>Empresas</span><em>↑ +0%</em></Card>
+          <Card className="ref-reference-stat stat-contracts" onClick={() => go("contracts")}><FileText /><b>{contracts.length}</b><span>Contratos Ativos</span><em>↑ +0%</em></Card>
+          <Card className="ref-reference-stat stat-payroll" onClick={() => go("payroll")}><WalletCards /><b>{money(pending)}</b><span>Salários Pendentes</span><em>↑ +0%</em></Card>
+        </div>
+      </section>
+      <section className="ref-reference-section ref-quick-section">
+        <div className="ref-reference-section-head"><span className="ref-section-icon">ϟ</span><b>ACESSO RÁPIDO</b><button onClick={() => go("menu")}>Todos os recursos <ChevronRight size={15} /></button></div>
+        <div className="ref-quick-grid ref-reference-quick-grid">
+          {canCreateUsers && <Card onClick={() => startNew("workers")}><UsersRound /><b>Cadastrar<br />Trabalhador</b></Card>}
+          {canManage && <Card onClick={() => startNew("contracts")}><FileText /><b>Criar<br />Contrato</b></Card>}
+          <Card onClick={() => go("time")}><Fingerprint /><b>Registrar<br />Ponto</b></Card>
+          {canPay && <Card onClick={() => go("salary-calc")}><WalletCards /><b>Folha<br />Salarial</b></Card>}
+          {canTerminate && <Card onClick={() => go("termination")}><FileText /><b>Rescisão</b></Card>}
+          <Card onClick={() => go("companies")}><Building2 /><b>Empresas</b></Card>
+        </div>
+      </section>
+      <section className="ref-reference-section ref-activity-section">
+        <div className="ref-reference-section-head"><span className="ref-section-icon">◷</span><b>ATIVIDADES RECENTES</b><button onClick={() => go("activity")}>Ver todas <ChevronRight size={15} /></button></div>
+        <div className="ref-list-card">
+          {(data.audits || []).slice(0, 5).map((item: any) => <button className="ref-activity" key={item.id}><span className="ref-activity-icon"><Check size={15} /></span><span><b>{item.action}</b><small>{item.detail}</small></span><time>{item.when}</time><ChevronRight size={15} /></button>)}
+          {!data.audits?.length && <div className="ref-empty">Nenhuma atividade registrada ainda.</div>}
+        </div>
+      </section>
     </>
   );
-
   const ActivityScreen = () => <><div className="ref-screen-intro"><span className="ref-screen-kicker">registro operacional</span><h2>Atividades recentes</h2><p>Histórico de alterações e eventos registrados na carteira.</p>{isAdmin && <button className="ref-secondary-action ref-wide" onClick={onClearLogs}>Apagar logs</button>}</div><div className="ref-list-card ref-activity-history">{(data.audits || []).map((item: any) => <div className="ref-activity-history-row" key={item.id}><span className={`ref-activity-icon ${item.tone || "green"}`}><Check size={15} /></span><span><b>{item.action}</b><small>{item.detail}</small></span><time>{item.when}</time></div>)}{!data.audits?.length && <div className="ref-empty">Nenhuma atividade registrada ainda.</div>}</div></>;
   const Workers = () => (
     <>
@@ -371,7 +383,7 @@ export default function MobileReference({
     if (screen === "accounts") return <AccountsScreen />;
     if (screen === "menu") return <MenuScreen />;
     if (screen === "sync") return <Sync />;
-    if (screen === "activity") return <ActivityScreen />;
+    if (screen === "activity" || screen === "reports") return <ActivityScreen />;
     if (screen === "android") return <Android />;
     if (screen === "profile") return <Profile />;
     if (screen === "themes") return <Themes />;
@@ -381,7 +393,7 @@ export default function MobileReference({
   return <div className="ref-mobile-app">
     <Header back={screen !== "home" && screen !== "menu"} />
     <main className="ref-mobile-content">{render()}</main>
-    <nav className="ref-bottom-nav"><button className={screen === "home" ? "active" : ""} onClick={() => go("home")}><Home/><span>Início</span></button><button className={screen === "workers" || screen === "worker" ? "active" : ""} onClick={() => go("workers")}><UsersRound/><span>Trabalhadores</span></button><button className={screen === "companies" || screen === "company" ? "active" : ""} onClick={() => go("companies")}><Building2/><span>Empresas</span></button><button className={screen === "menu" ? "active" : ""} onClick={() => go("menu")}><Menu/><span>Mais</span></button></nav>
+    <nav className="ref-bottom-nav"><button className={screen === "home" ? "active" : ""} onClick={() => go("home")}><Home/><span>Início</span></button><button className={screen === "workers" || screen === "worker" ? "active" : ""} onClick={() => go("workers")}><UsersRound/><span>Trabalhadores</span></button><button className={screen === "companies" || screen === "company" ? "active" : ""} onClick={() => go("companies")}><Building2/><span>Empresas</span></button><button className={screen === "reports" || screen === "activity" ? "active" : ""} onClick={() => go("reports")}><BarChart3/><span>Relatórios</span></button><button className={screen === "menu" ? "active" : ""} onClick={() => go("menu")}><Menu/><span>Mais</span></button></nav>
     {drawer && <div className="ref-drawer-backdrop" onClick={() => setDrawer(false)}><aside className="ref-drawer" onClick={e => e.stopPropagation()}><div className="ref-drawer-head"><b>CARTEIRA <span>RP</span></b><button onClick={() => setDrawer(false)}><X/></button></div><MenuScreen /></aside></div>}
   </div>;
 }

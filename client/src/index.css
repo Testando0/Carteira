@@ -631,3 +631,23 @@ body::after{opacity:.14!important;filter:blur(.25px)!important}
   .ref-reference-quick-grid{gap:6px!important}.ref-reference-quick-grid .ref-card{min-height:78px!important;padding:8px 4px!important}.ref-reference-quick-grid .ref-card svg{width:22px;height:22px;margin-bottom:3px}.ref-reference-quick-grid .ref-card b{font-size:9px!important}
   .ref-activity{min-height:48px!important;padding:7px 6px!important}.ref-activity-icon{width:24px!important;height:24px!important}.ref-activity b{font-size:10px!important}.ref-activity small{font-size:8px!important}
 }
+
+
+/* Mandatory reference background: futuristic skyline and luminous ribbons stay visible behind the UI. */
+:root{--reference-bg-filter:none}
+:root[data-theme="neutro"]{--reference-bg-filter:grayscale(1) brightness(.72) contrast(1.12)}
+:root[data-theme="media"]{--reference-bg-filter:hue-rotate(255deg) saturate(1.12) brightness(.82)}
+:root[data-theme="violet"]{--reference-bg-filter:hue-rotate(125deg) saturate(1.16) brightness(.82)}
+:root[data-theme="emerald"]{--reference-bg-filter:hue-rotate(0deg) saturate(1.08) brightness(.84)}
+:root[data-theme="master"]{--reference-bg-filter:hue-rotate(210deg) saturate(1.2) brightness(.78)}
+@media(max-width:760px){
+  .ref-mobile-app::before{content:""!important;position:fixed!important;inset:0!important;z-index:-1!important;pointer-events:none!important;opacity:.68!important;filter:var(--reference-bg-filter)!important;background-image:linear-gradient(180deg,color-mix(in srgb,var(--theme-bg) 12%,transparent) 0%,color-mix(in srgb,var(--theme-bg) 38%,transparent) 54%,color-mix(in srgb,var(--theme-bg) 70%,transparent) 100%),url('/carteira-mobile-bg.png')!important;background-size:cover,cover!important;background-position:center,center top!important;background-repeat:no-repeat!important;background-blend-mode:multiply,normal!important;animation:none!important}
+  .ref-mobile-app::after{content:""!important;position:fixed!important;inset:0!important;z-index:-1!important;pointer-events:none!important;opacity:.26!important;background:linear-gradient(115deg,transparent 0 30%,color-mix(in srgb,var(--theme-accent) 32%,transparent) 46%,transparent 52% 100%),radial-gradient(ellipse at 50% 45%,transparent 25%,var(--theme-bg) 100%)!important;background-size:100% 100%,100% 100%!important;filter:none!important}
+  .ref-reference-section{background:linear-gradient(145deg,color-mix(in srgb,var(--theme-surface-2) 68%,transparent),color-mix(in srgb,var(--theme-bg) 68%,transparent))!important}
+  .ref-mobile-header,.ref-bottom-nav{background:color-mix(in srgb,var(--theme-bg) 82%,transparent)!important}
+}
+
+@media(max-width:760px){
+  .ref-mobile-app::before{opacity:.9!important;background-image:linear-gradient(180deg,color-mix(in srgb,var(--theme-bg) 5%,transparent) 0%,color-mix(in srgb,var(--theme-bg) 22%,transparent) 54%,color-mix(in srgb,var(--theme-bg) 52%,transparent) 100%),url('/carteira-mobile-bg.png')!important}
+  .ref-mobile-app::after{opacity:.18!important}
+}

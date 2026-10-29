@@ -30,6 +30,10 @@ type Props = {
   session: any;
   online: boolean;
   canManage: boolean;
+  canPay: boolean;
+  canTerminate: boolean;
+  canCreateUsers: boolean;
+  canCreateCompanies: boolean;
   isAdmin: boolean;
   isWorker: boolean;
   myContracts: any[];
@@ -48,6 +52,7 @@ type Props = {
   onAddWorker: () => void;
   onAddCompany: () => void;
   onAddContract: () => void;
+  onCreateAccount: () => void;
   onSignContract: (contract: any) => void;
   onCloseContract: (contract: any) => any;
   onCalculateTermination?: (contract: any, reason: string, discount: number, date: string) => any;
@@ -77,6 +82,10 @@ export default function MobileReference({
   session,
   online,
   canManage,
+  canPay,
+  canTerminate,
+  canCreateUsers,
+  canCreateCompanies,
   isAdmin,
   isWorker,
   myContracts,
@@ -95,6 +104,7 @@ export default function MobileReference({
   onAddWorker,
   onAddCompany,
   onAddContract,
+  onCreateAccount,
   onSignContract,
   onCloseContract,
   onCalculateTermination,
@@ -174,6 +184,7 @@ export default function MobileReference({
     "new-contract": "Novo contrato",
     signature: "Assinatura de contrato",
     profile: "Meu perfil",
+    accounts: "Contas e acessos",
   };
 
   const Header = ({ back = false }: { back?: boolean }) => (
@@ -228,7 +239,7 @@ export default function MobileReference({
   const Workers = () => (
     <>
       <div className="ref-search">⌕ <input placeholder="Buscar por nome, ID ou empresa..." /></div>
-      {canManage && <button className="ref-primary ref-wide" onClick={() => startNew("workers")}><Plus size={17} /> Novo trabalhador</button>}
+      {canCreateUsers && <button className="ref-primary ref-wide" onClick={() => startNew("workers")}><Plus size={17} /> Novo trabalhador</button>}
       <div className="ref-list-card">{workers.map((worker: any) => <Card key={worker.id} className="ref-person-row" onClick={() => openWorker(worker)}><span className="ref-person-avatar">{worker.name?.split(" ").map((x: string) => x[0]).slice(0, 2).join("")}</span><span><b>{worker.name}</b><small>ID: {worker.id} | {worker.profession}</small><small>{worker.company}</small></span><em>{worker.status}</em><ChevronRight /></Card>)}</div>
     </>
   );
@@ -237,18 +248,18 @@ export default function MobileReference({
     <>
       <div className="ref-profile-head"><div className="ref-profile-photo">{selectedWorker.name?.split(" ").map((x: string) => x[0]).slice(0, 2).join("")}</div><div><h2>{selectedWorker.name}</h2><span>ID: {selectedWorker.id}</span></div><em>{selectedWorker.status}</em></div>
       <div className="ref-detail-grid"><div><small>Profissão</small><b>{selectedWorker.profession}</b></div><div><small>Telefone</small><b>{selectedWorker.phone || "Não informado"}</b></div><div><small>Empresa atual</small><b>{selectedWorker.company}</b></div><div><small>Status</small><b>{selectedWorker.status}</b></div></div>
-      <div className="ref-action-grid"><Card onClick={() => go("contracts")}><FileText /><span>Contratos</span></Card><Card onClick={() => go("time")}><Clock3 /><span>Ponto</span></Card><Card onClick={() => go("payroll")}><WalletCards /><span>Salários</span></Card></div>
+      <div className="ref-action-grid"><Card onClick={() => go("contracts")}><FileText /><span>Contratos</span></Card><Card onClick={() => go("time")}><Clock3 /><span>Ponto</span></Card><Card onClick={() => go("salary-calc")}><WalletCards /><span>Calcular salário</span></Card></div>
       <div className="ref-mobile-section-title"><span>histórico profissional</span></div><div className="ref-list-card">{contracts.filter((c: any) => c.worker === selectedWorker.name).map((c: any) => <Card key={c.id} className="ref-history-row" onClick={() => openContract(c)}><span><b>{c.company}</b><small>{c.role} • {c.admitted}</small></span><em>{c.status}</em><ChevronRight /></Card>)}</div>
     </>
   );
 
-  const Companies = () => <><div className="ref-search">⌕ <input placeholder="Buscar empresa..." /></div>{canManage && <button className="ref-primary ref-wide" onClick={() => startNew("companies")}><Plus size={17} /> Nova empresa</button>}<div className="ref-list-card">{companies.map((company: any) => <Card key={company.id} className="ref-company-row" onClick={() => openCompany(company)}><span className="ref-company-icon"><Building2 /></span><span><b>{company.name}</b><small>{company.type}</small><small>{company.location || "Local não informado"}</small></span><ChevronRight /></Card>)}</div></>;
+  const Companies = () => <><div className="ref-search">⌕ <input placeholder="Buscar empresa..." /></div>{canCreateCompanies && <button className="ref-primary ref-wide" onClick={() => startNew("companies")}><Plus size={17} /> Nova empresa</button>}<div className="ref-list-card">{companies.map((company: any) => <Card key={company.id} className="ref-company-row" onClick={() => openCompany(company)}><span className="ref-company-icon"><Building2 /></span><span><b>{company.name}</b><small>{company.type}</small><small>{company.location || "Local não informado"}</small></span><ChevronRight /></Card>)}</div></>;
 
   const CompanyDetail = () => selectedCompany && <><div className="ref-company-hero"><span className="ref-company-icon large"><Building2 /></span><h2>{selectedCompany.name}</h2><span>{selectedCompany.type} • {selectedCompany.location || "local não informado"}</span></div><div className="ref-detail-grid"><div><small>Responsável</small><b>{selectedCompany.owner}</b></div><div><small>Funcionários ativos</small><b>{contracts.filter((c: any) => c.company === selectedCompany.name && c.status === "Ativo").length}</b></div></div><div className="ref-mobile-section-title"><span>contratos da empresa</span></div><div className="ref-list-card">{contracts.filter((c: any) => c.company === selectedCompany.name).map((c: any) => <Card key={c.id} className="ref-history-row" onClick={() => openContract(c)}><span><b>{c.worker}</b><small>{c.role} • {money(c.salary)}</small></span><em>{c.status}</em><ChevronRight /></Card>)}</div></>;
 
   const Contracts = () => <><div className="ref-mobile-section-title"><span>{isWorker ? "meus contratos" : "contratos ativos"}</span><b>{contracts.length}</b></div>{canManage && <button className="ref-primary ref-wide" onClick={() => startNew("contracts")}><Plus size={17} /> Novo contrato</button>}<div className="ref-list-card">{contracts.map((c: any) => <Card key={c.id} className="ref-contract-row" onClick={() => openContract(c)}><span className="ref-contract-icon"><FileText /></span><span><b>{c.role}</b><small>{c.worker} • {c.company}</small><small>{money(c.salary)} • {c.schedule}</small></span><em className={c.workerSigned ? "ok" : "pending"}>{c.workerSigned ? "Assinado" : "Pendente"}</em><ChevronRight /></Card>)}</div></>;
 
-  const ContractDetail = () => selectedContract && <><div className="ref-contract-document"><span className="ref-contract-icon large"><FileText /></span><h2>Contrato de trabalho</h2><span>{selectedContract.id}</span><hr/><div><small>Trabalhador</small><b>{selectedContract.worker}</b></div><div><small>Empresa</small><b>{selectedContract.company}</b></div><div><small>Cargo e salário</small><b>{selectedContract.role} • {money(selectedContract.salary)}</b></div><div><small>Jornada</small><b>{selectedContract.schedule}</b></div><div><small>Admissão</small><b>{selectedContract.admitted}</b></div></div><div className="ref-action-grid"><Card onClick={() => onPrintContract(selectedContract)}><FileText /><span>Ver contrato</span></Card><Card onClick={() => setScreen("signature")}><Check /><span>Assinar</span></Card><Card onClick={() => onShareContract(selectedContract)}><FileCheck2 /><span>Enviar link</span></Card></div>{canManage && selectedContract.status === "Ativo" && <button className="ref-danger ref-wide" onClick={() => { const breakdown = onCloseContract(selectedContract); if (breakdown) setSelectedContract({ ...selectedContract, ...breakdown }); go("termination"); }}>Calcular rescisão</button>}{selectedContract.status === "Encerrado" && <button className="ref-primary ref-wide" onClick={() => go("termination")}>Ver cálculo da rescisão</button>}</>;
+  const ContractDetail = () => selectedContract && <><div className="ref-contract-document"><span className="ref-contract-icon large"><FileText /></span><h2>Contrato de trabalho</h2><span>{selectedContract.id}</span><hr/><div><small>Trabalhador</small><b>{selectedContract.worker}</b></div><div><small>Empresa</small><b>{selectedContract.company}</b></div><div><small>Cargo e salário</small><b>{selectedContract.role} • {money(selectedContract.salary)}</b></div><div><small>Jornada</small><b>{selectedContract.schedule}</b></div><div><small>Admissão</small><b>{selectedContract.admitted}</b></div></div><div className="ref-action-grid"><Card onClick={() => onPrintContract(selectedContract)}><FileText /><span>Ver contrato</span></Card><Card onClick={() => setScreen("signature")}><Check /><span>Assinar</span></Card><Card onClick={() => onShareContract(selectedContract)}><FileCheck2 /><span>Enviar link</span></Card></div>{canTerminate && selectedContract.status === "Ativo" && <button className="ref-danger ref-wide" onClick={() => { const breakdown = onCloseContract(selectedContract); if (breakdown) setSelectedContract({ ...selectedContract, ...breakdown }); go("termination"); }}>Calcular rescisão</button>}{selectedContract.status === "Encerrado" && <button className="ref-primary ref-wide" onClick={() => go("termination")}>Ver cálculo da rescisão</button>}</>;
 
   const Time = () => {
     const [clock, setClock] = useState(Date.now());
@@ -259,17 +270,19 @@ export default function MobileReference({
     const elapsed = (p: any) => { if (!p?.entry) return "00h 00m"; const current = new Date(clock); const start = minutesFrom(p.entry); const nowMinutes = current.getHours() * 60 + current.getMinutes(); let worked = Math.max(0, nowMinutes - start); if (p.breakStart) { const pauseStart = minutesFrom(p.breakStart); const pauseEnd = p.breakEnd ? minutesFrom(p.breakEnd) : nowMinutes; worked = Math.max(0, worked - Math.max(0, pauseEnd - pauseStart)); } return `${String(Math.floor(worked / 60)).padStart(2, "0")}h ${String(worked % 60).padStart(2, "0")}m`; };
     return <><div className="ref-time-head"><span>{new Date(clock).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span><small>{new Date(clock).toLocaleDateString("pt-BR")}</small></div>{openPunch ? <div className={`ref-open-punch ${paused ? "is-paused" : ""}`}><div><b>{paused ? "Ponto pausado" : "Jornada em andamento"}</b><span>Entrada às {openPunch.entry}{openPunch.breakStart ? ` • pausa ${openPunch.breakStart}${openPunch.breakEnd ? `–${openPunch.breakEnd}` : ""}` : ""}</span></div><strong>{elapsed(openPunch)}</strong><small>{paused ? "O contador está parado. Retome para continuar." : "Tempo trabalhado nesta jornada"}</small></div> : <div className="ref-time-empty"><Clock3 size={20} /><span>Nenhuma jornada iniciada hoje</span></div>}{openPunch ? <div className="ref-time-actions"><button className="ref-secondary-action" onClick={onPausePunch}>{paused ? "Retomar ponto" : "Pausar ponto"}</button><button className="ref-finish-action" onClick={onClosePunch}><Check size={16} /> Encerrar jornada</button></div> : <button className="ref-punch-button" onClick={onPunch}><span><Fingerprint size={58} /></span><b>Iniciar ponto</b><small>marcar horário de entrada</small></button>}<div className="ref-mobile-section-title"><span>Registros de hoje</span></div><div className="ref-list-card">{(data.punches || []).filter((p: any) => !isWorker || p.worker === session.name).slice(0, 8).map((p: any) => <div className="ref-punch-row" key={p.id}><span className="ref-punch-dot"><Clock3 size={15} /></span><span><b>{p.worker}</b><small>{p.date} • entrada {p.entry || "—"}</small></span><strong>{p.exit ? `entrada ${p.entry} • saída ${p.exit}` : p.entry ? (p.breakStart && !p.breakEnd ? "pausado" : "em andamento") : "—"}</strong></div>)}{!(data.punches || []).length && <div className="ref-empty">Nenhum registro de ponto ainda.</div>}</div></>;
   };
-  const Payroll = () => <><div className="ref-money-card"><small>total recebido</small><strong>{money(payments.filter((p: any) => p.status === "Pago").reduce((sum: number, p: any) => sum + p.amount - p.discount, 0))}</strong><span>valores líquidos pagos</span></div><div className="ref-mobile-section-title"><span>holerites e pendências</span></div><div className="ref-list-card">{payments.map((p: any) => <Card key={p.id} className="ref-pay-row" onClick={() => p.status === "Pendente" && canManage && onRegisterPayment(p)}><span className="ref-pay-icon"><WalletCards /></span><span><b>{p.reference}</b><small>{p.worker} • {p.company}</small><small>Desconto: {money(p.discount)}</small></span><strong>{money(p.amount - p.discount)}</strong><em className={p.status === "Pago" ? "ok" : "pending"}>{p.status}</em></Card>)}</div></>;
+  const Payroll = () => <><div className="ref-money-card"><small>total recebido</small><strong>{money(payments.filter((p: any) => p.status === "Pago").reduce((sum: number, p: any) => sum + p.amount - p.discount, 0))}</strong><span>valores líquidos pagos</span></div><div className="ref-mobile-section-title"><span>holerites e pendências</span></div><div className="ref-list-card">{payments.map((p: any) => <Card key={p.id} className="ref-pay-row" onClick={() => p.status === "Pendente" && canPay && onRegisterPayment(p)}><span className="ref-pay-icon"><WalletCards /></span><span><b>{p.reference}</b><small>{p.worker} • {p.company}</small><small>Desconto: {money(p.discount)}</small></span><strong>{money(p.amount - p.discount)}</strong><em className={p.status === "Pago" ? "ok" : "pending"}>{p.status}</em></Card>)}</div></>;
 
   const SalaryCalculator = () => {
-    const [contractId, setContractId] = useState(contracts[0]?.id || "");
+    const workerContracts = selectedWorker ? contracts.filter((item: any) => item.worker === selectedWorker.name) : contracts;
+    const [contractId, setContractId] = useState(workerContracts[0]?.id || "");
     const [days, setDays] = useState("15");
     const [bonus, setBonus] = useState("0");
     const [discount, setDiscount] = useState("0");
     const [result, setResult] = useState<any>(null);
-    const contract = contracts.find((item: any) => item.id === contractId) || contracts[0];
-    const calculate = () => { if (!contract) return; const value = calculateSalary(Number(contract.salary || 0), Number(days), Number(bonus), Number(discount)); setResult(value); if (!result && onCreatePayment && canManage) onCreatePayment({ id: `PAY-CALC-${Date.now()}`, worker: contract.worker, company: contract.company, amount: value.gross, date: "—", reference: `Cálculo ${new Date().toLocaleDateString("pt-BR", { month: "2-digit", year: "numeric" })}`, status: "Pendente", discount: value.discount }); };
-    return <><div className="ref-form-screen ref-calculator-screen"><div className="ref-screen-intro"><span className="ref-screen-kicker">folha inteligente</span><h2>Calcular salário</h2><p>Calcule o proporcional, adicionais, descontos e valor líquido antes de gerar o pagamento.</p></div><div className="ref-calculator-card"><div className="ref-mobile-section-title"><span>dados do contrato</span></div><label className="ref-field"><span>Contrato</span><select value={contractId} onChange={e => setContractId(e.target.value)}>{contracts.map((item: any) => <option key={item.id} value={item.id}>{item.worker} • {item.company}</option>)}</select></label>{contract && <div className="ref-calc-contract"><span>Empresa <b>{contract.company}</b></span><span>Cargo <b>{contract.role}</b></span><span>Salário mensal <b>{money(contract.salary)}</b></span></div>}<label className="ref-field"><span>Dias trabalhados no mês</span><input type="number" min="0" max="30" value={days} onChange={e => setDays(e.target.value)} /></label><div className="ref-calc-two"><label className="ref-field"><span>Bônus / verbas extras</span><input type="number" min="0" value={bonus} onChange={e => setBonus(e.target.value)} /></label><label className="ref-field"><span>Descontos</span><input type="number" min="0" value={discount} onChange={e => setDiscount(e.target.value)} /></label></div><button className="ref-primary ref-wide" onClick={calculate}><WalletCards size={17} /> Calcular salário</button></div>{result && <div className="ref-calculation-result"><div className="ref-mobile-section-title"><span>resultado</span></div><div><span>Saldo proporcional</span><b>{money(result.proportional)}</b></div><div><span>Total bruto</span><b>{money(result.gross)}</b></div><div className="ref-calculation-total"><span>Total líquido</span><b>{money(result.net)}</b></div><small>{canManage ? "Pagamento pendente criado no histórico." : "Cálculo simulado com os dados do contrato."}</small></div>}</div></>;
+    const contract = workerContracts.find((item: any) => item.id === contractId) || workerContracts[0];
+    useEffect(() => { setContractId(workerContracts[0]?.id || ""); setResult(null); }, [selectedWorker?.name, contracts]);
+    const calculate = () => { if (!contract) return; const value = calculateSalary(Number(contract.salary || 0), Number(days), Number(bonus), Number(discount)); setResult(value); if (!result && onCreatePayment && canPay) onCreatePayment({ id: `PAY-CALC-${Date.now()}`, worker: contract.worker, company: contract.company, amount: value.gross, date: "—", reference: `Cálculo ${new Date().toLocaleDateString("pt-BR", { month: "2-digit", year: "numeric" })}`, status: "Pendente", discount: value.discount }); };
+    return <><div className="ref-form-screen ref-calculator-screen"><div className="ref-screen-intro"><span className="ref-screen-kicker">folha inteligente</span><h2>Calcular salário</h2><p>Calcule o proporcional, adicionais, descontos e valor líquido antes de gerar o pagamento.</p></div><div className="ref-calculator-card"><div className="ref-mobile-section-title"><span>dados do contrato</span></div><label className="ref-field"><span>Contrato</span><select value={contractId} onChange={e => setContractId(e.target.value)}>{workerContracts.map((item: any) => <option key={item.id} value={item.id}>{item.worker} • {item.company}</option>)}</select></label>{contract && <div className="ref-calc-contract"><span>Empresa <b>{contract.company}</b></span><span>Cargo <b>{contract.role}</b></span><span>Salário mensal <b>{money(contract.salary)}</b></span></div>}<label className="ref-field"><span>Dias trabalhados no mês</span><input type="number" min="0" max="30" value={days} onChange={e => setDays(e.target.value)} /></label><div className="ref-calc-two"><label className="ref-field"><span>Bônus / verbas extras</span><input type="number" min="0" value={bonus} onChange={e => setBonus(e.target.value)} /></label><label className="ref-field"><span>Descontos</span><input type="number" min="0" value={discount} onChange={e => setDiscount(e.target.value)} /></label></div><button className="ref-primary ref-wide" onClick={calculate}><WalletCards size={17} /> Calcular salário</button></div>{result && <div className="ref-calculation-result"><div className="ref-mobile-section-title"><span>resultado</span></div><div><span>Saldo proporcional</span><b>{money(result.proportional)}</b></div><div><span>Total bruto</span><b>{money(result.gross)}</b></div><div className="ref-calculation-total"><span>Total líquido</span><b>{money(result.net)}</b></div><small>{canPay ? "Pagamento pendente criado no histórico." : "Cálculo simulado com os dados do contrato."}</small></div>}</div></>;
   };
   const Overtime = () => {
     const availableWorkers = canManage ? workers : workers.filter((worker: any) => worker.name === session.name);
@@ -320,7 +333,8 @@ export default function MobileReference({
     </>;
   };
 
-  const MenuScreen = () => <><div className="ref-menu-profile"><div className="ref-avatar">{session.name?.split(" ").map((x: string) => x[0]).slice(0, 2).join("")}</div><div><b>{session.name}</b><small>{session.role}</small></div></div>{[[Home,"Início","home"],[UsersRound,"Trabalhadores","workers"],[Building2,"Empresas","companies"],[FileText,"Contratos","contracts"],[Clock3,"Ponto","time"],[WalletCards,"Salários","payroll"],[WalletCards,"Calcular salário","salary-calc"],[Clock3,"Horas extras","overtime"],[FileText,"Histórico","history"],[FileText,"Rescisão","termination"],[UserRound,"Meu perfil","profile"],[Settings2,"Temas","themes"],[ShieldCheck,"Sincronização","sync"],[Smartphone,"Android","android"]].map(([Icon,label,next]: any) => <button className="ref-menu-row" key={next} onClick={() => go(next)}><Icon size={19}/><span>{label}</span><ChevronRight size={16}/></button>)}<button className="ref-menu-row danger" onClick={onLogout}><LogOut size={19}/><span>Sair</span></button></>;
+  const AccountsScreen = () => <div className="ref-center-screen"><ShieldCheck size={52}/><h2>Contas e acessos</h2><p>Admin Master e Admin Chefe podem criar contas com cargo, usuário e senha.</p><button className="ref-primary ref-wide" onClick={onCreateAccount}><Plus size={17}/> Criar nova conta</button></div>;
+  const MenuScreen = () => <><div className="ref-menu-profile"><div className="ref-avatar">{session.name?.split(" ").map((x: string) => x[0]).slice(0, 2).join("")}</div><div><b>{session.name}</b><small>{session.role}</small></div></div>{[[Home,"Início","home"],[UsersRound,"Trabalhadores","workers"],[Building2,"Empresas","companies"],[FileText,"Contratos","contracts"],[Clock3,"Ponto","time"],[WalletCards,"Salários","payroll"],[WalletCards,"Calcular salário","salary-calc"],[Clock3,"Horas extras","overtime"],[FileText,"Histórico","history"],[FileText,"Rescisão","termination"],[UserRound,"Meu perfil","profile"],[ShieldCheck,"Contas","accounts"],[Settings2,"Temas","themes"],[ShieldCheck,"Sincronização","sync"],[Smartphone,"Android","android"]].filter((item: any) => { const next = item[2]; return isAdmin || isWorker || (session.role === "Admin Chefe" ? ["home","contracts","payroll","salary-calc","termination","profile","accounts","themes","sync","android"].includes(next) : session.role === "Admin Junior" ? ["home","workers","companies","profile","themes","sync","android"].includes(next) : true); }).map(([Icon,label,next]: any) => <button className="ref-menu-row" key={next} onClick={() => go(next)}><Icon size={19}/><span>{label}</span><ChevronRight size={16}/></button>)}<button className="ref-menu-row danger" onClick={onLogout}><LogOut size={19}/><span>Sair</span></button></>;
 
   const Sync = () => <div className="ref-center-screen"><Wifi size={52}/><h2>Dados sincronizados</h2><p>Seus registros estão seguros e disponíveis em todos os seus dispositivos.</p><div className="ref-sync-status"><span><Check size={15}/></span>{online ? "Conectado • banco de dados online" : "Modo local • aguardando conexão"}</div><button className="ref-primary ref-wide" onClick={onExportBackup}><ShieldCheck size={17}/> Exportar backup</button></div>;
   const Android = () => <div className="ref-center-screen"><Smartphone size={58}/><h2>Disponível para Android</h2><p>Instale a Carteira RP no celular para acessar ponto, contratos e holerites.</p><div className="ref-checks"><span><Check /> APK instalável</span><span><Check /> Funciona offline e online</span><span><Check /> Compartilhamento entre celulares</span><span><Check /> Seguro e criptografado</span></div><button className="ref-primary ref-wide" onClick={() => alert("A versão Android será disponibilizada em breve.")}>Instalar</button></div>;
@@ -344,6 +358,7 @@ export default function MobileReference({
     if (screen === "new-company") return NewCompany();
     if (screen === "new-contract") return NewContract();
     if (screen === "signature") return <Signature />;
+    if (screen === "accounts") return <AccountsScreen />;
     if (screen === "menu") return <MenuScreen />;
     if (screen === "sync") return <Sync />;
     if (screen === "activity") return <ActivityScreen />;

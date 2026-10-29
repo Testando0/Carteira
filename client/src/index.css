@@ -651,3 +651,14 @@ body::after{opacity:.14!important;filter:blur(.25px)!important}
   .ref-mobile-app::before{opacity:.9!important;background-image:linear-gradient(180deg,color-mix(in srgb,var(--theme-bg) 5%,transparent) 0%,color-mix(in srgb,var(--theme-bg) 22%,transparent) 54%,color-mix(in srgb,var(--theme-bg) 52%,transparent) 100%),url('/carteira-mobile-bg.png')!important}
   .ref-mobile-app::after{opacity:.18!important}
 }
+
+
+/* Final mobile behavior: floating rounded rail and stable internal scrolling on Android. */
+@media(max-width:760px){
+  html:has(.ref-mobile-app),body:has(.ref-mobile-app){height:100%;overflow:hidden;overscroll-behavior:none}
+  .ref-mobile-app{height:100svh!important;min-height:100svh!important;max-height:100svh!important;overflow:hidden!important;overflow-anchor:none!important}
+  .ref-mobile-header{position:relative!important;top:auto!important;flex:none!important}
+  .ref-mobile-content{height:calc(100svh - 72px)!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:contain!important;-webkit-overflow-scrolling:touch!important;scroll-behavior:auto!important;overflow-anchor:none!important}
+  .ref-mobile-app > .ref-bottom-nav{position:fixed!important;left:10px!important;right:10px!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;top:auto!important;width:auto!important;height:76px!important;min-height:0!important;margin:0!important;padding:6px 5px!important;border:1px solid color-mix(in srgb,var(--theme-accent) 55%,transparent)!important;border-radius:34px!important;overflow:hidden!important;background:color-mix(in srgb,var(--theme-bg) 88%,transparent)!important;box-shadow:0 10px 32px color-mix(in srgb,var(--theme-bg) 78%,transparent),0 0 22px color-mix(in srgb,var(--theme-accent) 16%,transparent),inset 0 1px color-mix(in srgb,var(--theme-text) 16%,transparent)!important;backdrop-filter:blur(22px)!important;transform:translateZ(0)!important}
+  .ref-bottom-nav button{border-radius:28px!important}
+}

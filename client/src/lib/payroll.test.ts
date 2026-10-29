@@ -8,8 +8,24 @@ describe("calculateSalary", () => {
       bonus: 250,
       gross: 1750,
       discount: 100,
+      deductions: [{ id: "manual", label: "Outros descontos", kind: "manual", amount: 100 }],
       net: 1650,
     });
+  });
+
+  it("calcula percentuais sobre o bruto e soma serviços fixos configurados", () => {
+    const result = calculateSalary(2000, 30, 0, 0, {
+      inssPercent: 15,
+      fgtsPercent: 15,
+      fixed: [
+        { label: "Seguro de vida", amount: 500 },
+        { label: "Vale alimentação", amount: 400 },
+      ],
+    });
+    expect(result.gross).toBe(2000);
+    expect(result.discount).toBe(1500);
+    expect(result.net).toBe(500);
+    expect(result.deductions.map(item => item.amount)).toEqual([300, 300, 500, 400]);
   });
 
   it("limita dias trabalhados a 30 e nunca gera líquido negativo", () => {

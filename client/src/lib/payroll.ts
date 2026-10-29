@@ -1,8 +1,23 @@
+export type SalaryDeductionLine = {
+  id: string;
+  label: string;
+  kind: "percent" | "fixed" | "manual";
+  rate?: number;
+  amount: number;
+};
+
+export type SalaryDeductionOptions = {
+  inssPercent?: number;
+  fgtsPercent?: number;
+  fixed?: Array<{ label: string; amount: number }>;
+};
+
 export type SalaryCalculation = {
   proportional: number;
   bonus: number;
   gross: number;
   discount: number;
+  deductions: SalaryDeductionLine[];
   net: number;
 };
 
@@ -17,21 +32,37 @@ export type TerminationCalculation = {
 
 const roundMoney = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 const nonNegative = (value: number) => Math.max(0, Number.isFinite(value) ? value : 0);
+const safeRate = (value: number) => Math.min(100, nonNegative(Number(value)));
 
 export function calculateSalary(
   salary: number,
   workedDays: number,
   bonus: number,
-  discount: number,
+  discount = 0,
+  options: SalaryDeductionOptions = {},
 ): SalaryCalculation {
   const monthlySalary = nonNegative(Number(salary));
   const days = Math.min(30, nonNegative(Number(workedDays)));
   const extra = nonNegative(Number(bonus));
-  const deductions = nonNegative(Number(discount));
   const proportional = roundMoney((monthlySalary / 30) * days);
   const gross = roundMoney(proportional + extra);
-  const net = roundMoney(Math.max(0, gross - deductions));
-  return { proportional, bonus: roundMoney(extra), gross, discount: roundMoney(deductions), net };
+  const deductions: SalaryDeductionLine[] = [];
+  const inssPercent = safeRate(options.inssPercent || 0);
+  const fgtsPercent = safeRate(options.fgtsPercent || 0);
+
+  if (inssPercent > 0) deductions.push({ id: "inss", label: "INSS", kind: "percent", rate: inssPercent, amount: roundMoney(gross * inssPercent / 100) });
+  if (fgtsPercent > 0) deductions.push({ id: "fgts", label: "FGTS", kind: "percent", rate: fgtsPercent, amount: roundMoney(gross * fgtsPercent / 100) });
+  (options.fixed || []).forEach((item, index) => {
+    const amount = roundMoney(nonNegative(Number(item.amount)));
+    const label = String(item.label || `Desconto fixo ${index + 1}`).trim();
+    if (amount > 0) deductions.push({ id: `fixed-${index}`, label, kind: "fixed", amount });
+  });
+  const manual = roundMoney(nonNegative(Number(discount)));
+  if (manual > 0) deductions.push({ id: "manual", label: "Outros descontos", kind: "manual", amount: manual });
+
+  const totalDiscount = roundMoney(deductions.reduce((sum, item) => sum + item.amount, 0));
+  const net = roundMoney(Math.max(0, gross - totalDiscount));
+  return { proportional, bonus: roundMoney(extra), gross, discount: totalDiscount, deductions, net };
 }
 
 function parseDate(value: string): Date | null {
@@ -56,7 +87,6 @@ export function calculateTermination(
     0,
     (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth(),
   );
-  // Regra do servidor: mês com 15 dias ou mais entra na proporcional, limitada a 12 meses.
   const proportionalMonths = Math.min(12, Math.max(1, monthDifference + (end.getDate() >= 15 ? 1 : 0)));
   const salaryBalance = roundMoney((monthlySalary / 30) * Math.min(30, Math.max(0, end.getDate())));
   const vacationProportional = roundMoney((monthlySalary / 12) * proportionalMonths);
@@ -66,12 +96,5 @@ export function calculateTermination(
   const netTerminationAmount = roundMoney(
     Math.max(0, salaryBalance + vacationProportional + thirteenthProportional + fgtsFine - terminationDiscounts),
   );
-  return {
-    salaryBalance,
-    vacationProportional,
-    thirteenthProportional,
-    fgtsFine,
-    terminationDiscounts,
-    netTerminationAmount,
-  };
+  return { salaryBalance, vacationProportional, thirteenthProportional, fgtsFine, terminationDiscounts, netTerminationAmount };
 }

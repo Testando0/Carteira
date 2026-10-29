@@ -677,3 +677,9 @@ body::after{opacity:.14!important;filter:blur(.25px)!important}
   .ref-payroll-list:has(.ref-payroll-empty){background:transparent!important;border-color:color-mix(in srgb,var(--theme-accent) 28%,transparent)!important;box-shadow:none!important}
   .ref-payroll-empty{background:transparent!important}
 }
+
+
+.ref-salary-deductions{margin-top:18px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--theme-border) 55%,transparent)}
+.ref-salary-deductions .ref-mobile-section-title{margin-top:0!important;align-items:flex-end}.ref-salary-deductions .ref-mobile-section-title small{font-size:9px;color:var(--theme-accent);letter-spacing:0;text-transform:none}.ref-fixed-deduction{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(100px,.65fr);gap:10px;padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--theme-border) 30%,transparent)}
+.ref-salary-deduction-lines{display:flex!important;flex-direction:column;align-items:stretch!important;gap:6px!important;padding:12px 0!important}.ref-salary-deduction-lines>span{color:var(--theme-text)!important;font-weight:750}.ref-salary-deduction-lines small{display:block;color:var(--theme-muted);font-size:11px}.ref-salary-deduction-lines>b{align-self:flex-end;color:var(--theme-accent);font-size:12px}
+@media(max-width:390px){.ref-fixed-deduction{grid-template-columns:1fr;gap:0}.ref-salary-deductions .ref-mobile-section-title{flex-wrap:wrap}}

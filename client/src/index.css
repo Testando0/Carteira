@@ -662,3 +662,18 @@ body::after{opacity:.14!important;filter:blur(.25px)!important}
   .ref-mobile-app > .ref-bottom-nav{position:fixed!important;left:10px!important;right:10px!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;top:auto!important;width:auto!important;height:76px!important;min-height:0!important;margin:0!important;padding:6px 5px!important;border:1px solid color-mix(in srgb,var(--theme-accent) 55%,transparent)!important;border-radius:34px!important;overflow:hidden!important;background:color-mix(in srgb,var(--theme-bg) 88%,transparent)!important;box-shadow:0 10px 32px color-mix(in srgb,var(--theme-bg) 78%,transparent),0 0 22px color-mix(in srgb,var(--theme-accent) 16%,transparent),inset 0 1px color-mix(in srgb,var(--theme-text) 16%,transparent)!important;backdrop-filter:blur(22px)!important;transform:translateZ(0)!important}
   .ref-bottom-nav button{border-radius:28px!important}
 }
+
+
+/* Payroll empty state: never collapse the full-width section to a 2px line. */
+@media(max-width:760px){
+  .ref-payroll-list{width:100%!important;max-width:none!important;min-height:calc(100svh - 330px)!important;box-sizing:border-box!important}
+  .ref-payroll-empty{min-height:calc(100svh - 350px)!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:10px!important;padding:28px 18px!important;text-align:center!important;border:0!important;background:transparent!important;color:var(--theme-muted)!important}
+  .ref-payroll-empty svg{color:var(--theme-accent)!important;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--theme-accent) 45%,transparent))}
+  .ref-payroll-empty b{color:var(--theme-text)!important;font-size:13px!important}
+  .ref-payroll-empty small{max-width:240px!important;color:var(--theme-muted)!important;font-size:10px!important;line-height:1.45!important}
+}
+
+@media(max-width:760px){
+  .ref-payroll-list:has(.ref-payroll-empty){background:transparent!important;border-color:color-mix(in srgb,var(--theme-accent) 28%,transparent)!important;box-shadow:none!important}
+  .ref-payroll-empty{background:transparent!important}
+}

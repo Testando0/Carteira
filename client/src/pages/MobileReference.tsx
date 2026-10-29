@@ -34,6 +34,7 @@ type Props = {
   canTerminate: boolean;
   canCreateUsers: boolean;
   canCreateCompanies: boolean;
+  canDeleteCompanies: boolean;
   isAdmin: boolean;
   isWorker: boolean;
   myContracts: any[];
@@ -53,6 +54,10 @@ type Props = {
   onAddCompany: () => void;
   onAddContract: () => void;
   onCreateAccount: () => void;
+  onDeleteCompany: (company: any) => void;
+  onDeleteContract: (contract: any) => void;
+  onDeleteWorker: (worker: any) => void;
+  onClearLogs: () => void;
   onSignContract: (contract: any) => void;
   onCloseContract: (contract: any) => any;
   onCalculateTermination?: (contract: any, reason: string, discount: number, date: string) => any;
@@ -86,6 +91,7 @@ export default function MobileReference({
   canTerminate,
   canCreateUsers,
   canCreateCompanies,
+  canDeleteCompanies,
   isAdmin,
   isWorker,
   myContracts,
@@ -105,6 +111,10 @@ export default function MobileReference({
   onAddCompany,
   onAddContract,
   onCreateAccount,
+  onDeleteCompany,
+  onDeleteContract,
+  onDeleteWorker,
+  onClearLogs,
   onSignContract,
   onCloseContract,
   onCalculateTermination,
@@ -235,7 +245,7 @@ export default function MobileReference({
     </>
   );
 
-  const ActivityScreen = () => <><div className="ref-screen-intro"><span className="ref-screen-kicker">registro operacional</span><h2>Atividades recentes</h2><p>Histórico de alterações e eventos registrados na carteira.</p></div><div className="ref-list-card ref-activity-history">{(data.audits || []).map((item: any) => <div className="ref-activity-history-row" key={item.id}><span className={`ref-activity-icon ${item.tone || "green"}`}><Check size={15} /></span><span><b>{item.action}</b><small>{item.detail}</small></span><time>{item.when}</time></div>)}{!data.audits?.length && <div className="ref-empty">Nenhuma atividade registrada ainda.</div>}</div></>;
+  const ActivityScreen = () => <><div className="ref-screen-intro"><span className="ref-screen-kicker">registro operacional</span><h2>Atividades recentes</h2><p>Histórico de alterações e eventos registrados na carteira.</p>{isAdmin && <button className="ref-secondary-action ref-wide" onClick={onClearLogs}>Apagar logs</button>}</div><div className="ref-list-card ref-activity-history">{(data.audits || []).map((item: any) => <div className="ref-activity-history-row" key={item.id}><span className={`ref-activity-icon ${item.tone || "green"}`}><Check size={15} /></span><span><b>{item.action}</b><small>{item.detail}</small></span><time>{item.when}</time></div>)}{!data.audits?.length && <div className="ref-empty">Nenhuma atividade registrada ainda.</div>}</div></>;
   const Workers = () => (
     <>
       <div className="ref-search">⌕ <input placeholder="Buscar por nome, ID ou empresa..." /></div>
@@ -255,11 +265,11 @@ export default function MobileReference({
 
   const Companies = () => <><div className="ref-search">⌕ <input placeholder="Buscar empresa..." /></div>{canCreateCompanies && <button className="ref-primary ref-wide" onClick={() => startNew("companies")}><Plus size={17} /> Nova empresa</button>}<div className="ref-list-card">{companies.map((company: any) => <Card key={company.id} className="ref-company-row" onClick={() => openCompany(company)}><span className="ref-company-icon"><Building2 /></span><span><b>{company.name}</b><small>{company.type}</small><small>{company.location || "Local não informado"}</small></span><ChevronRight /></Card>)}</div></>;
 
-  const CompanyDetail = () => selectedCompany && <><div className="ref-company-hero"><span className="ref-company-icon large"><Building2 /></span><h2>{selectedCompany.name}</h2><span>{selectedCompany.type} • {selectedCompany.location || "local não informado"}</span></div><div className="ref-detail-grid"><div><small>Responsável</small><b>{selectedCompany.owner}</b></div><div><small>Funcionários ativos</small><b>{contracts.filter((c: any) => c.company === selectedCompany.name && c.status === "Ativo").length}</b></div></div><div className="ref-mobile-section-title"><span>contratos da empresa</span></div><div className="ref-list-card">{contracts.filter((c: any) => c.company === selectedCompany.name).map((c: any) => <Card key={c.id} className="ref-history-row" onClick={() => openContract(c)}><span><b>{c.worker}</b><small>{c.role} • {money(c.salary)}</small></span><em>{c.status}</em><ChevronRight /></Card>)}</div></>;
+  const CompanyDetail = () => selectedCompany && <><div className="ref-company-hero"><span className="ref-company-icon large"><Building2 /></span><h2>{selectedCompany.name}</h2><span>{selectedCompany.type} • {selectedCompany.location || "local não informado"}</span></div><div className="ref-detail-grid"><div><small>Responsável</small><b>{selectedCompany.owner}</b></div><div><small>Funcionários ativos</small><b>{contracts.filter((c: any) => c.company === selectedCompany.name && c.status === "Ativo").length}</b></div></div><div className="ref-mobile-section-title"><span>contratos da empresa</span></div>{canDeleteCompanies && <button className="ref-danger ref-wide" onClick={() => onDeleteCompany(selectedCompany)}>Excluir empresa</button>}<div className="ref-list-card">{contracts.filter((c: any) => c.company === selectedCompany.name).map((c: any) => <Card key={c.id} className="ref-history-row" onClick={() => openContract(c)}><span><b>{c.worker}</b><small>{c.role} • {money(c.salary)}</small></span><em>{c.status}</em><ChevronRight /></Card>)}</div></>;
 
   const Contracts = () => <><div className="ref-mobile-section-title"><span>{isWorker ? "meus contratos" : "contratos ativos"}</span><b>{contracts.length}</b></div>{canManage && <button className="ref-primary ref-wide" onClick={() => startNew("contracts")}><Plus size={17} /> Novo contrato</button>}<div className="ref-list-card">{contracts.map((c: any) => <Card key={c.id} className="ref-contract-row" onClick={() => openContract(c)}><span className="ref-contract-icon"><FileText /></span><span><b>{c.role}</b><small>{c.worker} • {c.company}</small><small>{money(c.salary)} • {c.schedule}</small></span><em className={c.workerSigned ? "ok" : "pending"}>{c.workerSigned ? "Assinado" : "Pendente"}</em><ChevronRight /></Card>)}</div></>;
 
-  const ContractDetail = () => selectedContract && <><div className="ref-contract-document"><span className="ref-contract-icon large"><FileText /></span><h2>Contrato de trabalho</h2><span>{selectedContract.id}</span><hr/><div><small>Trabalhador</small><b>{selectedContract.worker}</b></div><div><small>Empresa</small><b>{selectedContract.company}</b></div><div><small>Cargo e salário</small><b>{selectedContract.role} • {money(selectedContract.salary)}</b></div><div><small>Jornada</small><b>{selectedContract.schedule}</b></div><div><small>Admissão</small><b>{selectedContract.admitted}</b></div></div><div className="ref-action-grid"><Card onClick={() => onPrintContract(selectedContract)}><FileText /><span>Ver contrato</span></Card><Card onClick={() => setScreen("signature")}><Check /><span>Assinar</span></Card><Card onClick={() => onShareContract(selectedContract)}><FileCheck2 /><span>Enviar link</span></Card></div>{canTerminate && selectedContract.status === "Ativo" && <button className="ref-danger ref-wide" onClick={() => { const breakdown = onCloseContract(selectedContract); if (breakdown) setSelectedContract({ ...selectedContract, ...breakdown }); go("termination"); }}>Calcular rescisão</button>}{selectedContract.status === "Encerrado" && <button className="ref-primary ref-wide" onClick={() => go("termination")}>Ver cálculo da rescisão</button>}</>;
+  const ContractDetail = () => selectedContract && <><div className="ref-contract-document"><span className="ref-contract-icon large"><FileText /></span><h2>Contrato de trabalho</h2><span>{selectedContract.id}</span><hr/><div><small>Trabalhador</small><b>{selectedContract.worker}</b></div><div><small>Empresa</small><b>{selectedContract.company}</b></div><div><small>Cargo e salário</small><b>{selectedContract.role} • {money(selectedContract.salary)}</b></div><div><small>Jornada</small><b>{selectedContract.schedule}</b></div><div><small>Admissão</small><b>{selectedContract.admitted}</b></div></div><div className="ref-action-grid"><Card onClick={() => onPrintContract(selectedContract)}><FileText /><span>Ver contrato</span></Card><Card onClick={() => setScreen("signature")}><Check /><span>Assinar</span></Card><Card onClick={() => onShareContract(selectedContract)}><FileCheck2 /><span>Enviar link</span></Card></div>{canTerminate && selectedContract.status === "Ativo" && <button className="ref-danger ref-wide" onClick={() => { const breakdown = onCloseContract(selectedContract); if (breakdown) setSelectedContract({ ...selectedContract, ...breakdown }); go("termination"); }}>Calcular rescisão</button>}{selectedContract.status === "Encerrado" && <><button className="ref-primary ref-wide" onClick={() => go("termination")}>Ver cálculo da rescisão</button>{isAdmin && <><button className="ref-secondary-action ref-wide" onClick={() => onDeleteContract(selectedContract)}>Excluir contrato encerrado</button>{workers.find((worker: any) => worker.name === selectedContract.worker) && <button className="ref-danger ref-wide" onClick={() => onDeleteWorker(workers.find((worker: any) => worker.name === selectedContract.worker))}>Excluir usuário vinculado</button>}</>}</>}</>;
 
   const Time = () => {
     const [clock, setClock] = useState(Date.now());
@@ -334,7 +344,7 @@ export default function MobileReference({
   };
 
   const AccountsScreen = () => <div className="ref-center-screen"><ShieldCheck size={52}/><h2>Contas e acessos</h2><p>Admin Master e Admin Chefe podem criar contas com cargo, usuário e senha.</p><button className="ref-primary ref-wide" onClick={onCreateAccount}><Plus size={17}/> Criar nova conta</button></div>;
-  const MenuScreen = () => <><div className="ref-menu-profile"><div className="ref-avatar">{session.name?.split(" ").map((x: string) => x[0]).slice(0, 2).join("")}</div><div><b>{session.name}</b><small>{session.role}</small></div></div>{[[Home,"Início","home"],[UsersRound,"Trabalhadores","workers"],[Building2,"Empresas","companies"],[FileText,"Contratos","contracts"],[Clock3,"Ponto","time"],[WalletCards,"Salários","payroll"],[WalletCards,"Calcular salário","salary-calc"],[Clock3,"Horas extras","overtime"],[FileText,"Histórico","history"],[FileText,"Rescisão","termination"],[UserRound,"Meu perfil","profile"],[ShieldCheck,"Contas","accounts"],[Settings2,"Temas","themes"],[ShieldCheck,"Sincronização","sync"],[Smartphone,"Android","android"]].filter((item: any) => { const next = item[2]; return isAdmin || isWorker || (session.role === "Admin Chefe" ? ["home","contracts","payroll","salary-calc","termination","profile","accounts","themes","sync","android"].includes(next) : session.role === "Admin Junior" ? ["home","workers","companies","profile","themes","sync","android"].includes(next) : true); }).map(([Icon,label,next]: any) => <button className="ref-menu-row" key={next} onClick={() => go(next)}><Icon size={19}/><span>{label}</span><ChevronRight size={16}/></button>)}<button className="ref-menu-row danger" onClick={onLogout}><LogOut size={19}/><span>Sair</span></button></>;
+  const MenuScreen = () => <><div className="ref-menu-profile"><div className="ref-avatar">{session.name?.split(" ").map((x: string) => x[0]).slice(0, 2).join("")}</div><div><b>{session.name}</b><small>{session.role}</small></div></div>{[[Home,"Início","home"],[UsersRound,"Trabalhadores","workers"],[Building2,"Empresas","companies"],[FileText,"Contratos","contracts"],[Clock3,"Ponto","time"],[WalletCards,"Salários","payroll"],[WalletCards,"Calcular salário","salary-calc"],[Clock3,"Horas extras","overtime"],[FileText,"Histórico","history"],[FileText,"Rescisão","termination"],[UserRound,"Meu perfil","profile"],[ShieldCheck,"Contas","accounts"],[Settings2,"Temas","themes"],[ShieldCheck,"Sincronização","sync"],[Smartphone,"Android","android"]].filter((item: any) => { const next = item[2]; return isAdmin || isWorker || (session.role === "Admin Chefe" ? ["home","companies","contracts","payroll","salary-calc","termination","profile","accounts","themes","sync","android"].includes(next) : session.role === "Admin Junior" ? ["home","workers","companies","profile","themes","sync","android"].includes(next) : true); }).map(([Icon,label,next]: any) => <button className="ref-menu-row" key={next} onClick={() => go(next)}><Icon size={19}/><span>{label}</span><ChevronRight size={16}/></button>)}<button className="ref-menu-row danger" onClick={onLogout}><LogOut size={19}/><span>Sair</span></button></>;
 
   const Sync = () => <div className="ref-center-screen"><Wifi size={52}/><h2>Dados sincronizados</h2><p>Seus registros estão seguros e disponíveis em todos os seus dispositivos.</p><div className="ref-sync-status"><span><Check size={15}/></span>{online ? "Conectado • banco de dados online" : "Modo local • aguardando conexão"}</div><button className="ref-primary ref-wide" onClick={onExportBackup}><ShieldCheck size={17}/> Exportar backup</button></div>;
   const Android = () => <div className="ref-center-screen"><Smartphone size={58}/><h2>Disponível para Android</h2><p>Instale a Carteira RP no celular para acessar ponto, contratos e holerites.</p><div className="ref-checks"><span><Check /> APK instalável</span><span><Check /> Funciona offline e online</span><span><Check /> Compartilhamento entre celulares</span><span><Check /> Seguro e criptografado</span></div><button className="ref-primary ref-wide" onClick={() => alert("A versão Android será disponibilizada em breve.")}>Instalar</button></div>;

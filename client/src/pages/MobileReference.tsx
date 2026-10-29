@@ -61,6 +61,7 @@ type Props = {
   onDeleteContract: (contract: any) => void;
   onDeleteWorker: (worker: any) => void;
   onClearLogs: () => void;
+  onMarkNotificationsRead?: () => void;
   onSignContract: (contract: any) => void;
   onCloseContract: (contract: any) => any;
   onCalculateTermination?: (contract: any, reason: string, discount: number, date: string) => any;
@@ -118,6 +119,7 @@ export default function MobileReference({
   onDeleteContract,
   onDeleteWorker,
   onClearLogs,
+  onMarkNotificationsRead,
   onSignContract,
   onCloseContract,
   onCalculateTermination,
@@ -134,6 +136,7 @@ export default function MobileReference({
   const [selectedCompany, setSelectedCompany] = useState<any>(null);
   const [selectedContract, setSelectedContract] = useState<any>(null);
   const [drawer, setDrawer] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   useEffect(() => {
     const resetScroll = () => {
       window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -182,10 +185,10 @@ export default function MobileReference({
     contracts: "Contratos",
     contract: "Contrato de trabalho",
     time: "Ponto",
-    payroll: "Salários",
+    payroll: "Holerite",
     "salary-calc": "Cálculo de salário",
     overtime: "Horas trabalhadas",
-    history: "Histórico",
+    history: "Extrato de pagamentos",
     termination: "Rescisão",
     "termination-form": "Dados da rescisão",
     menu: "Menu",
@@ -211,7 +214,8 @@ export default function MobileReference({
         {back ? <ArrowLeft size={20} /> : <Menu size={24} />}
       </button>
       {!back ? <div className="ref-reference-brand"><span className="ref-brand-badge">★</span><div><strong>CARTEIRA DE<br /><b>TRABALHO RP</b></strong><small>REGISTRO DE TRABALHADORES</small></div></div> : <div className="ref-mobile-title">{title[screen]}</div>}
-      {!back ? <button className="ref-reference-bell" aria-label="Notificações"><Bell size={23} /><i>{data.notifications || 0}</i></button> : <div className="ref-mobile-status"><span /> {online ? "online" : "local"}</div>}
+      {!back ? <button className={`ref-reference-bell ${notificationsOpen ? "is-open" : ""}`} aria-label="Notificações" onClick={() => setNotificationsOpen(value => !value)}><Bell size={23} /><i>{data.notifications || 0}</i></button> : <div className="ref-mobile-status"><span /> {online ? "online" : "local"}</div>}
+      {!back && notificationsOpen && <div className="ref-notification-panel"><div className="ref-notification-head"><b>Notificações</b><button onClick={() => { setNotificationsOpen(false); onMarkNotificationsRead?.(); }}>Marcar como lidas</button></div>{(data.audits || []).slice(0, 8).map((item: any) => <div className="ref-notification-item" key={item.id}><span><Bell size={14} /></span><div><b>{item.action}</b><small>{item.detail}</small></div><time>{item.when}</time></div>)}{!(data.audits || []).length && <div className="ref-notification-empty">Nenhuma notificação nova.</div>}</div>}
     </header>
   );
 
@@ -371,7 +375,7 @@ export default function MobileReference({
   };
 
   const AccountsScreen = () => <div className="ref-center-screen"><ShieldCheck size={52}/><h2>Contas e acessos</h2><p>Admin Master e Admin Chefe podem criar contas com cargo, usuário e senha.</p><button className="ref-primary ref-wide" onClick={onCreateAccount}><Plus size={17}/> Criar nova conta</button></div>;
-  const MenuScreen = () => <><div className="ref-menu-profile"><div className="ref-avatar">{session.name?.split(" ").map((x: string) => x[0]).slice(0, 2).join("")}</div><div><b>{session.name}</b><small>{session.role}</small></div></div>{[[Home,"Início","home"],[UsersRound,"Trabalhadores","workers"],[Building2,"Empresas","companies"],[FileText,"Contratos","contracts"],[Clock3,"Ponto","time"],[WalletCards,"Salários","payroll"],[WalletCards,"Calcular salário","salary-calc"],[Clock3,"Horas extras","overtime"],[FileText,"Histórico","history"],[FileText,"Rescisão","termination"],[UserRound,"Meu perfil","profile"],[ShieldCheck,"Contas","accounts"],[Settings2,"Temas","themes"],[ShieldCheck,"Sincronização","sync"],[Smartphone,"Android","android"]].filter((item: any) => { const next = item[2]; return isAdmin || isWorker || (session.role === "Admin Chefe" ? ["home","companies","contracts","payroll","salary-calc","termination","profile","accounts","themes","sync","android"].includes(next) : session.role === "Admin Junior" ? ["home","workers","companies","profile","themes","sync","android"].includes(next) : true); }).map(([Icon,label,next]: any) => <button className="ref-menu-row" key={next} onClick={() => go(next)}><Icon size={19}/><span>{label}</span><ChevronRight size={16}/></button>)}<button className="ref-menu-row danger" onClick={onLogout}><LogOut size={19}/><span>Sair</span></button></>;
+  const MenuScreen = () => { const commonItems = new Set(["home", "payroll", "time", "overtime", "profile", "contracts", "themes", "history"]); const menuItems: any[] = [[Home, "Início", "home"], [UsersRound, "Trabalhadores", "workers"], [Building2, "Empresas", "companies"], [FileText, isWorker ? "Meu contrato" : "Contratos", "contracts"], [Clock3, "Ponto", "time"], [WalletCards, "Holerite", "payroll"], [WalletCards, "Calcular salário", "salary-calc"], [Clock3, "Horas trabalhadas", "overtime"], [FileText, "Extrato de pagamentos", "history"], [FileText, "Rescisão", "termination"], [UserRound, "Meu perfil", "profile"], [ShieldCheck, "Contas", "accounts"], [Settings2, "Temas", "themes"], [ShieldCheck, "Sincronização", "sync"], [Smartphone, "Android", "android"]]; const isAdministrator = isAdmin || session.role === "Admin Chefe" || session.role === "Admin Junior"; return <><div className="ref-menu-profile"><div className="ref-avatar">{session.name?.split(" ").map((x: string) => x[0]).slice(0, 2).join("")}</div><div><b>{session.name}</b><small>{session.role}</small></div></div>{menuItems.filter((item: any) => isAdministrator || !isWorker || commonItems.has(item[2])).map(([Icon, label, next]: any) => <button className="ref-menu-row" key={next} onClick={() => go(next)}><Icon size={19}/><span>{label}</span><ChevronRight size={16}/></button>)}<button className="ref-menu-row danger" onClick={onLogout}><LogOut size={19}/><span>Sair</span></button></>; };
 
   const Sync = () => <div className="ref-center-screen"><Wifi size={52}/><h2>Dados sincronizados</h2><p>Seus registros estão seguros e disponíveis em todos os seus dispositivos.</p><div className="ref-sync-status"><span><Check size={15}/></span>{online ? "Conectado • banco de dados online" : "Modo local • aguardando conexão"}</div><button className="ref-primary ref-wide" onClick={onExportBackup}><ShieldCheck size={17}/> Exportar backup</button></div>;
   const Android = () => <div className="ref-center-screen"><Smartphone size={58}/><h2>Disponível para Android</h2><p>Instale a Carteira RP no celular para acessar ponto, contratos e holerites.</p><div className="ref-checks"><span><Check /> APK instalável</span><span><Check /> Funciona offline e online</span><span><Check /> Compartilhamento entre celulares</span><span><Check /> Seguro e criptografado</span></div><button className="ref-primary ref-wide" onClick={() => alert("A versão Android será disponibilizada em breve.")}>Instalar</button></div>;
@@ -408,7 +412,7 @@ export default function MobileReference({
   return <div className="ref-mobile-app">
     <Header back={screen !== "home" && screen !== "menu"} />
     <main className="ref-mobile-content">{render()}</main>
-    <nav className="ref-bottom-nav"><button className={screen === "home" ? "active" : ""} onClick={() => go("home")}><Home/><span>Início</span></button><button className={screen === "workers" || screen === "worker" ? "active" : ""} onClick={() => go("workers")}><UsersRound/><span>Trabalhadores</span></button><button className={screen === "companies" || screen === "company" ? "active" : ""} onClick={() => go("companies")}><Building2/><span>Empresas</span></button><button className={screen === "reports" || screen === "activity" ? "active" : ""} onClick={() => go("reports")}><BarChart3/><span>Relatórios</span></button><button className={screen === "menu" ? "active" : ""} onClick={() => go("menu")}><Menu/><span>Mais</span></button></nav>
+    <nav className="ref-bottom-nav">{isWorker ? <><button className={screen === "home" ? "active" : ""} onClick={() => go("home")}><Home/><span>Início</span></button><button className={screen === "payroll" ? "active" : ""} onClick={() => go("payroll")}><WalletCards/><span>Holerite</span></button><button className={screen === "time" ? "active" : ""} onClick={() => go("time")}><Clock3/><span>Ponto</span></button><button className={screen === "history" ? "active" : ""} onClick={() => go("history")}><FileText/><span>Extrato</span></button><button className={screen === "menu" ? "active" : ""} onClick={() => go("menu")}><Menu/><span>Mais</span></button></> : <><button className={screen === "home" ? "active" : ""} onClick={() => go("home")}><Home/><span>Início</span></button><button className={screen === "workers" || screen === "worker" ? "active" : ""} onClick={() => go("workers")}><UsersRound/><span>Trabalhadores</span></button><button className={screen === "companies" || screen === "company" ? "active" : ""} onClick={() => go("companies")}><Building2/><span>Empresas</span></button><button className={screen === "reports" || screen === "activity" ? "active" : ""} onClick={() => go("reports")}><BarChart3/><span>Relatórios</span></button><button className={screen === "menu" ? "active" : ""} onClick={() => go("menu")}><Menu/><span>Mais</span></button></>}</nav>
     {drawer && <div className="ref-drawer-backdrop" onClick={() => setDrawer(false)}><aside className="ref-drawer" onClick={e => e.stopPropagation()}><div className="ref-drawer-head"><b>CARTEIRA <span>RP</span></b><button onClick={() => setDrawer(false)}><X/></button></div><MenuScreen /></aside></div>}
   </div>;
 }
